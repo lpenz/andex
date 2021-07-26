@@ -4,9 +4,11 @@
 
 use cludex::*;
 
+use std::convert::TryFrom;
+
 use anyhow::Result;
 
-// Tests for stex:
+/* Basic tests */
 
 #[test]
 fn test_basic() -> Result<()> {
@@ -37,7 +39,7 @@ fn test_oob1() {
 //     assert_eq!(usize::from(u), 5_usize);
 // }
 
-// Tests for arrays:
+/* Tests for arrays: */
 
 #[derive(Default)]
 struct Marr([u32; 5]);
@@ -55,4 +57,29 @@ fn test_marr() -> Result<()> {
         assert_eq!(m[i], num as u32 + 20);
     }
     Ok(())
+}
+
+#[test]
+fn test_try_from() {
+    let result = Cludex::<3>::try_from(5);
+    if let Err(ref err) = result {
+        println!("{}, {:?}", err, err);
+        let _ = err.clone();
+    } else {
+        panic!("wrong error!");
+    }
+}
+
+/* Test automatic traits */
+
+#[test]
+fn test_send() {
+    fn assert_send<T: Send>() {}
+    assert_send::<Cludex<7>>();
+}
+
+#[test]
+fn test_sync() {
+    fn assert_sync<T: Sync>() {}
+    assert_sync::<Cludex<5>>();
 }
