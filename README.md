@@ -23,10 +23,10 @@ type MyIdx = Cludex<12>;
 
 // Create the array wrapper:
 #[derive(Default)]
-pub struct MyU32([i32; MyIdx::SIZE]);
+pub struct MyU32([u32; MyIdx::SIZE]);
 
 // Use `impl_cludex_for` to make it indexable:
-impl_cludex_for!(MyU32, i32, MyIdx);
+impl_cludex_for!(MyU32, u32, MyIdx);
 
 fn example() {
     // Iterate:
