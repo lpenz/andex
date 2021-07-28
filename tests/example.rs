@@ -62,7 +62,8 @@ impl Game {
     }
 }
 
-fn main() {
+#[test]
+fn example_test() {
     let mut game = Game::default();
     game.play();
     for playerid in PlayerId::iter() {

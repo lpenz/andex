@@ -78,7 +78,14 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// use cludex::*;
     /// type MyIndex = Cludex<12>;
     ///
-    /// const myValue : MyIndex = MyIndex::new::<0>();
+    /// const MYVALUE : MyIndex = MyIndex::new::<0>();
+    /// ```
+    /// And that's why the following doesn't compile:
+    /// ```compile_fail
+    /// use cludex::*;
+    /// type MyIndex = Cludex<12>;
+    ///
+    /// const MYVALUE : MyIndex = MyIndex::new::<12>();
     /// ```
     #[inline]
     pub const fn new<const N: usize>() -> Cludex<SIZE> {
@@ -95,7 +102,7 @@ impl<const SIZE: usize> Cludex<SIZE> {
 
     /// Iterate all possible values of the index
     ///
-    /// Useful to iterate over an array inside a `struct`, without
+    /// Useful to loop over an array inside a `struct`, without
     /// holding a reference to the whole struct in the loop.
     ///
     /// # Example
