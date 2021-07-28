@@ -45,6 +45,7 @@ fn test_oob1() {
 struct Marr([u32; 5]);
 type Mcludex = Cludex<5>;
 impl_cludex_for!(Marr, u32, Mcludex);
+impl_deref_for!(Marr, u32, Mcludex);
 
 #[test]
 fn test_marr() -> Result<()> {
@@ -56,6 +57,7 @@ fn test_marr() -> Result<()> {
     for (num, i) in Mcludex::iter().enumerate() {
         assert_eq!(m[i], num as u32 + 20);
     }
+    let _ = m.iter().map(|i| i);
     Ok(())
 }
 

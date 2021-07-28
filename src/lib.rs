@@ -12,7 +12,7 @@
 //!
 //! This is specially useful in scenarios where we have different arrays
 //! inside a `struct` and we want reference members without holding "hard"
-//! references.
+//! references to those members.
 //!
 //! # Basic usage
 //!
@@ -228,6 +228,50 @@ macro_rules! impl_cludex_for {
         impl std::ops::IndexMut<$cludex> for $name {
             fn index_mut(&mut self, i: $cludex) -> &mut $base {
                 i.index_arr_mut(&mut self.0)
+            }
+        }
+    };
+}
+
+/// Implement `Deref` for the wrapped array, making the wrapper behave
+/// like it except for only being indexable with the cludex.
+///
+/// # Example
+///
+/// ```
+/// use cludex::*;
+/// use cludex::impl_cludex_for;
+/// use cludex::impl_deref_for;
+///
+/// type MyIdx = Cludex<12>;
+/// #[derive(Default)]
+/// pub struct MyU32([u32; MyIdx::SIZE]);
+/// impl_cludex_for!(MyU32, u32, MyIdx);
+///
+/// // Use `impl_deref_for` to make MyU32 behave like an array
+/// impl_deref_for!(MyU32, u32, MyIdx);
+///
+/// fn example() {
+///     let myu32 = MyU32::default();
+///     // We can now use `iter` directly in the wrapper:
+///     for value in myu32.iter() {
+///         println!("value {}", value);
+///     }
+///     // But still only index with a cludex:
+///     println!("{}", myu32[MyIdx::new::<0>()]);
+/// }
+#[macro_export]
+macro_rules! impl_deref_for {
+    ($name:ty, $base: ty, $cludex:ty) => {
+        impl std::ops::Deref for $name {
+            type Target = [$base; <$cludex>::SIZE];
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+        impl std::ops::DerefMut for $name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.0
             }
         }
     };
