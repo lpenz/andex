@@ -20,15 +20,19 @@
 //! use cludex::*;
 //! use cludex::impl_cludex_for;
 //!
-//! // Create the type alias:
-//! type MyIdx = Cludex<12>;
-//!
-//! // Create the array wrapper:
+//! // Create the array wrapper; we can use the cludex size already:
 //! #[derive(Default)]
 //! pub struct MyU32([u32; MyIdx::SIZE]);
 //!
+//! // Create the cludex type alias:
+//! type MyIdx = Cludex<12>;
+//!
 //! // Use `impl_cludex_for` to make it indexable:
 //! impl_cludex_for!(MyU32, u32, MyIdx);
+//!
+//! // We can use `impl_cludex_for` with other wrappers too:
+//! pub struct MyF64([f64; MyIdx::SIZE]);
+//! impl_cludex_for!(MyF64, f64, MyIdx);
 //!
 //! fn example() {
 //!     // Iterate:
@@ -60,7 +64,7 @@ use std::fmt;
 /// ```
 /// use cludex::*;
 ///
-/// type MyIndex = Cludex<12>;
+/// type MyIdx = Cludex<12>;
 /// ```
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Cludex<const SIZE: usize>(usize);
@@ -76,16 +80,16 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// `const` instances - that's why this is the recommended usage:
     /// ```
     /// use cludex::*;
-    /// type MyIndex = Cludex<12>;
+    /// type MyIdx = Cludex<12>;
     ///
-    /// const MYVALUE : MyIndex = MyIndex::new::<0>();
+    /// const MYVALUE : MyIdx = MyIdx::new::<0>();
     /// ```
     /// And that's why the following doesn't compile:
     /// ```compile_fail
     /// use cludex::*;
-    /// type MyIndex = Cludex<12>;
+    /// type MyIdx = Cludex<12>;
     ///
-    /// const MYVALUE : MyIndex = MyIndex::new::<12>();
+    /// const MYVALUE : MyIdx = MyIdx::new::<12>();
     /// ```
     #[inline]
     pub const fn new<const N: usize>() -> Cludex<SIZE> {
@@ -96,7 +100,8 @@ impl<const SIZE: usize> Cludex<SIZE> {
     }
 
     /// Extracts the numeric value of the index, consuming it
-    pub const fn into_inner(self) -> usize {
+    #[inline]
+    pub const fn into_usize(self) -> usize {
         self.0
     }
 
@@ -110,10 +115,10 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// ```
     /// use cludex::*;
     ///
-    /// type PlayerId = Cludex<12>;
-    ///
     /// #[derive(Default)]
-    /// pub struct Scores([u32; 12]);
+    /// pub struct Scores([u32; PlayerId::SIZE]);
+    ///
+    /// type PlayerId = Cludex<12>;
     ///
     /// impl_cludex_for!(Scores, u32, PlayerId);
     ///
@@ -137,7 +142,7 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// Used internally by the `Index` trait implementation.
     #[inline]
     pub fn index_arr<'a, T>(&self, arr: &'a [T; SIZE]) -> &'a T {
-        unsafe { arr.get_unchecked(self.0) }
+        unsafe { arr.get_unchecked(self.into_usize()) }
     }
 
     /// Mut-indexes the provided array
@@ -145,13 +150,13 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// Used internally by the `IndexMut` trait implementation.
     #[inline]
     pub fn index_arr_mut<'a, T>(&self, arr: &'a mut [T; SIZE]) -> &'a mut T {
-        unsafe { arr.get_unchecked_mut(self.0) }
+        unsafe { arr.get_unchecked_mut(self.into_usize()) }
     }
 }
 
 impl<const SIZE: usize> From<Cludex<SIZE>> for usize {
     fn from(i: Cludex<SIZE>) -> Self {
-        i.0
+        i.into_usize()
     }
 }
 
@@ -168,7 +173,7 @@ impl<const SIZE: usize> convert::TryFrom<usize> for Cludex<SIZE> {
 
 impl<const SIZE: usize> fmt::Display for Cludex<SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.into_usize())
     }
 }
 
@@ -243,9 +248,9 @@ macro_rules! impl_cludex_for {
 /// use cludex::impl_cludex_for;
 /// use cludex::impl_deref_for;
 ///
-/// type MyIdx = Cludex<12>;
 /// #[derive(Default)]
 /// pub struct MyU32([u32; MyIdx::SIZE]);
+/// type MyIdx = Cludex<12>;
 /// impl_cludex_for!(MyU32, u32, MyIdx);
 ///
 /// // Use `impl_deref_for` to make MyU32 behave like an array

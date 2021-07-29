@@ -10,16 +10,18 @@ use anyhow::Result;
 
 /* Basic tests */
 
+type C = Cludex<3>;
+
 #[test]
 fn test_basic() -> Result<()> {
-    for i in Cludex::<3>::iter() {
+    for i in C::iter() {
         assert!(usize::from(i) < 3_usize);
     }
-    let i = Cludex::<3>::default();
+    let i = C::default();
     assert_eq!(usize::from(i), 0_usize);
-    const J: Cludex<3> = Cludex::<3>::new::<2>();
+    const J: C = C::new::<2>();
     assert_eq!(usize::from(J), 2_usize);
-    let k: Cludex<3> = Cludex::<3>::new::<1>();
+    let k: C = C::new::<1>();
     assert_eq!(usize::from(k), 1_usize);
     Ok(())
 }
@@ -27,7 +29,7 @@ fn test_basic() -> Result<()> {
 #[test]
 #[should_panic]
 fn test_oob1() {
-    let u: Cludex<3> = Cludex::<3>::new::<5>();
+    let u: C = C::new::<5>();
     assert_eq!(usize::from(u), 5_usize);
 }
 
@@ -63,7 +65,7 @@ fn test_marr() -> Result<()> {
 
 #[test]
 fn test_try_from() {
-    let result = Cludex::<3>::try_from(5);
+    let result = C::try_from(5);
     if let Err(ref err) = result {
         println!("{}, {:?}", err, err);
         let _ = err.clone();
@@ -77,11 +79,11 @@ fn test_try_from() {
 #[test]
 fn test_send() {
     fn assert_send<T: Send>() {}
-    assert_send::<Cludex<7>>();
+    assert_send::<C>();
 }
 
 #[test]
 fn test_sync() {
     fn assert_sync<T: Sync>() {}
-    assert_sync::<Cludex<5>>();
+    assert_sync::<C>();
 }
