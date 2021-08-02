@@ -1,13 +1,13 @@
 [package]
-name = "cludex"
+name = "andex"
 description = "exCLUsive inDEXes for rust arrays with strong types"
 version = "0.0.2"
 authors = ["Leandro Lisboa Penz <lpenz@lpenz.org>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/lpenz/cludex"
-repository = "https://github.com/lpenz/cludex"
+homepage = "https://github.com/lpenz/andex"
+repository = "https://github.com/lpenz/andex"
 
 [dev-dependencies]
 anyhow = "1"

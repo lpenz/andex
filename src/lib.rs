@@ -6,7 +6,7 @@
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs, rustdoc::missing_doc_code_examples)]
 
-//! *cludex* (exCLUsive inDEXes) is a single-file, zero-dependency rust
+//! *andex* (exCLUsive inDEXes) is a single-file, zero-dependency rust
 //! crate that helps us create a strongly-typed, zero-cost, safe array
 //! index and use it to index a custom array wrapper.
 //!
@@ -17,22 +17,22 @@
 //! # Basic usage
 //!
 //! ```
-//! use cludex::*;
-//! use cludex::impl_cludex_for;
+//! use andex::*;
+//! use andex::impl_andex_for;
 //!
-//! // Create the array wrapper; we can use the cludex size already:
+//! // Create the array wrapper; we can use the andex size already:
 //! #[derive(Default)]
 //! pub struct MyU32([u32; MyIdx::SIZE]);
 //!
-//! // Create the cludex type alias:
-//! type MyIdx = Cludex<12>;
+//! // Create the andex type alias:
+//! type MyIdx = Andex<12>;
 //!
-//! // Use `impl_cludex_for` to make it indexable:
-//! impl_cludex_for!(MyU32, u32, MyIdx);
+//! // Use `impl_andex_for` to make it indexable:
+//! impl_andex_for!(MyU32, u32, MyIdx);
 //!
-//! // We can use `impl_cludex_for` with other wrappers too:
+//! // We can use `impl_andex_for` with other wrappers too:
 //! pub struct MyF64([f64; MyIdx::SIZE]);
-//! impl_cludex_for!(MyF64, f64, MyIdx);
+//! impl_andex_for!(MyF64, f64, MyIdx);
 //!
 //! fn example() {
 //!     // Iterate:
@@ -56,47 +56,47 @@ use std::fmt;
 /// This is the type of the exclusive index that receives the size of
 /// the array as a const generic `SIZE` parameter.
 ///
-/// Note: the maximum numerical value in the cludex is `SIZE - 1`.
+/// Note: the maximum numerical value in the andex is `SIZE - 1`.
 ///
 /// # Example
 ///
 /// This should be used in a type alias, as such:
 /// ```
-/// use cludex::*;
+/// use andex::*;
 ///
-/// type MyIdx = Cludex<12>;
+/// type MyIdx = Andex<12>;
 /// ```
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Cludex<const SIZE: usize>(usize);
+pub struct Andex<const SIZE: usize>(usize);
 
-impl<const SIZE: usize> Cludex<SIZE> {
+impl<const SIZE: usize> Andex<SIZE> {
     /// The `SIZE` parameter, which is the size of the array that this
-    /// cludex indexes.
+    /// andex indexes.
     pub const SIZE: usize = SIZE;
 
-    /// Create a new cludex instance
+    /// Create a new andex instance
     ///
     /// Bounds are checked at compile time when this is used to create
     /// `const` instances - that's why this is the recommended usage:
     /// ```
-    /// use cludex::*;
-    /// type MyIdx = Cludex<12>;
+    /// use andex::*;
+    /// type MyIdx = Andex<12>;
     ///
     /// const MYVALUE : MyIdx = MyIdx::new::<0>();
     /// ```
     /// And that's why the following doesn't compile:
     /// ```compile_fail
-    /// use cludex::*;
-    /// type MyIdx = Cludex<12>;
+    /// use andex::*;
+    /// type MyIdx = Andex<12>;
     ///
     /// const MYVALUE : MyIdx = MyIdx::new::<12>();
     /// ```
     #[inline]
-    pub const fn new<const N: usize>() -> Cludex<SIZE> {
+    pub const fn new<const N: usize>() -> Andex<SIZE> {
         // Trick for compile-time check of N:
         const ASSERT: [(); 1] = [(); 1];
         let _ = ASSERT[(N >= SIZE) as usize];
-        Cludex(N)
+        Andex(N)
     }
 
     /// Extracts the numeric value of the index, consuming it
@@ -113,14 +113,14 @@ impl<const SIZE: usize> Cludex<SIZE> {
     /// # Example
     ///
     /// ```
-    /// use cludex::*;
+    /// use andex::*;
     ///
     /// #[derive(Default)]
     /// pub struct Scores([u32; PlayerId::SIZE]);
     ///
-    /// type PlayerId = Cludex<12>;
+    /// type PlayerId = Andex<12>;
     ///
-    /// impl_cludex_for!(Scores, u32, PlayerId);
+    /// impl_andex_for!(Scores, u32, PlayerId);
     ///
     /// #[derive(Default)]
     /// struct Game {
@@ -133,8 +133,8 @@ impl<const SIZE: usize> Cludex<SIZE> {
     ///     }
     /// }
     /// ```
-    pub fn iter() -> impl Iterator<Item = Cludex<SIZE>> {
-        (0..SIZE).into_iter().map(Cludex)
+    pub fn iter() -> impl Iterator<Item = Andex<SIZE>> {
+        (0..SIZE).into_iter().map(Andex)
     }
 
     /// Indexes the provided array
@@ -154,24 +154,24 @@ impl<const SIZE: usize> Cludex<SIZE> {
     }
 }
 
-impl<const SIZE: usize> From<Cludex<SIZE>> for usize {
-    fn from(i: Cludex<SIZE>) -> Self {
+impl<const SIZE: usize> From<Andex<SIZE>> for usize {
+    fn from(i: Andex<SIZE>) -> Self {
         i.into_usize()
     }
 }
 
-impl<const SIZE: usize> convert::TryFrom<usize> for Cludex<SIZE> {
+impl<const SIZE: usize> convert::TryFrom<usize> for Andex<SIZE> {
     type Error = Error;
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         if value < SIZE {
-            Ok(Cludex(value))
+            Ok(Andex(value))
         } else {
             Err(Error::OutOfBounds { value, size: SIZE })
         }
     }
 }
 
-impl<const SIZE: usize> fmt::Display for Cludex<SIZE> {
+impl<const SIZE: usize> fmt::Display for Andex<SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.into_usize())
     }
@@ -179,15 +179,15 @@ impl<const SIZE: usize> fmt::Display for Cludex<SIZE> {
 
 /* Errors: */
 
-/// Cludex errors enum
+/// Andex errors enum
 #[derive(Debug, Clone)]
 pub enum Error {
-    /// Tried to use a out-of-bounds value to create a cludex
+    /// Tried to use a out-of-bounds value to create an andex
     OutOfBounds {
-        /// The out-of-bounds value that was provided at cludex
+        /// The out-of-bounds value that was provided at andex
         /// creation
         value: usize,
-        /// The `SIZE` of the cludex type
+        /// The `SIZE` of the andex type
         ///
         /// The maximum value accepted is `SIZE - 1`
         size: usize,
@@ -216,22 +216,22 @@ impl fmt::Display for Error {
 /// Implement Index and IndexMut for the provided array wrapper, base
 /// type and array size
 ///
-/// This macro "links" the cludex to the provided array wrapper by
+/// This macro "links" the andex to the provided array wrapper by
 /// implementing appropriate Index and IndexMut. The underlying
 /// implementation uses `get_unchecked` and `get_unchecked_mut` to
 /// avoid checking array bounds - which were already checked when the
-/// cludex instance was instantiated.
+/// andex instance was instantiated.
 #[macro_export]
-macro_rules! impl_cludex_for {
-    ($name:ty, $base: ty, $cludex:ty) => {
-        impl std::ops::Index<$cludex> for $name {
+macro_rules! impl_andex_for {
+    ($name:ty, $base: ty, $andex:ty) => {
+        impl std::ops::Index<$andex> for $name {
             type Output = $base;
-            fn index(&self, i: $cludex) -> &Self::Output {
+            fn index(&self, i: $andex) -> &Self::Output {
                 i.index_arr(&self.0)
             }
         }
-        impl std::ops::IndexMut<$cludex> for $name {
-            fn index_mut(&mut self, i: $cludex) -> &mut $base {
+        impl std::ops::IndexMut<$andex> for $name {
+            fn index_mut(&mut self, i: $andex) -> &mut $base {
                 i.index_arr_mut(&mut self.0)
             }
         }
@@ -239,19 +239,19 @@ macro_rules! impl_cludex_for {
 }
 
 /// Implement `Deref` for the wrapped array, making the wrapper behave
-/// like it except for only being indexable with the cludex.
+/// like it except for only being indexable with the andex.
 ///
 /// # Example
 ///
 /// ```
-/// use cludex::*;
-/// use cludex::impl_cludex_for;
-/// use cludex::impl_deref_for;
+/// use andex::*;
+/// use andex::impl_andex_for;
+/// use andex::impl_deref_for;
 ///
 /// #[derive(Default)]
 /// pub struct MyU32([u32; MyIdx::SIZE]);
-/// type MyIdx = Cludex<12>;
-/// impl_cludex_for!(MyU32, u32, MyIdx);
+/// type MyIdx = Andex<12>;
+/// impl_andex_for!(MyU32, u32, MyIdx);
 ///
 /// // Use `impl_deref_for` to make MyU32 behave like an array
 /// impl_deref_for!(MyU32, u32, MyIdx);
@@ -262,14 +262,14 @@ macro_rules! impl_cludex_for {
 ///     for value in myu32.iter() {
 ///         println!("value {}", value);
 ///     }
-///     // But still only index with a cludex:
+///     // But still only index with an andex:
 ///     println!("{}", myu32[MyIdx::new::<0>()]);
 /// }
 #[macro_export]
 macro_rules! impl_deref_for {
-    ($name:ty, $base: ty, $cludex:ty) => {
+    ($name:ty, $base: ty, $andex:ty) => {
         impl std::ops::Deref for $name {
-            type Target = [$base; <$cludex>::SIZE];
+            type Target = [$base; <$andex>::SIZE];
             fn deref(&self) -> &Self::Target {
                 &self.0
             }

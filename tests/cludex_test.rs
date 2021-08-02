@@ -2,7 +2,7 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of this source code package.
 
-use cludex::*;
+use andex::*;
 
 use std::convert::TryFrom;
 
@@ -10,7 +10,7 @@ use anyhow::Result;
 
 /* Basic tests */
 
-type C = Cludex<3>;
+type C = Andex<3>;
 
 #[test]
 fn test_basic() -> Result<()> {
@@ -37,7 +37,7 @@ fn test_oob1() {
 // #[test]
 // #[should_panic]
 // fn test_oob2() {
-//     const u: Cludex<3> = Cludex::<3>::new::<5>();
+//     const u: Andex<3> = Andex::<3>::new::<5>();
 //     assert_eq!(usize::from(u), 5_usize);
 // }
 
@@ -45,18 +45,18 @@ fn test_oob1() {
 
 #[derive(Default)]
 struct Marr([u32; 5]);
-type Mcludex = Cludex<5>;
-impl_cludex_for!(Marr, u32, Mcludex);
-impl_deref_for!(Marr, u32, Mcludex);
+type Mandex = Andex<5>;
+impl_andex_for!(Marr, u32, Mandex);
+impl_deref_for!(Marr, u32, Mandex);
 
 #[test]
 fn test_marr() -> Result<()> {
     let mut m = Marr::default();
-    m[Cludex::new::<2>()] = 5;
-    for (num, i) in Mcludex::iter().enumerate() {
+    m[Andex::new::<2>()] = 5;
+    for (num, i) in Mandex::iter().enumerate() {
         m[i] = num as u32 + 20;
     }
-    for (num, i) in Mcludex::iter().enumerate() {
+    for (num, i) in Mandex::iter().enumerate() {
         assert_eq!(m[i], num as u32 + 20);
     }
     let _ = m.iter().map(|i| i);

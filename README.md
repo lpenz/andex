@@ -1,9 +1,9 @@
-[![CI](https://github.com/lpenz/cludex/actions/workflows/ci.yml/badge.svg)](https://github.com/lpenz/cludex/actions/workflows/ci.yml)
-[![coveralls](https://coveralls.io/repos/github/lpenz/cludex/badge.svg?branch=main)](https://coveralls.io/github/lpenz/cludex?branch=main)
+[![CI](https://github.com/lpenz/andex/actions/workflows/ci.yml/badge.svg)](https://github.com/lpenz/andex/actions/workflows/ci.yml)
+[![coveralls](https://coveralls.io/repos/github/lpenz/andex/badge.svg?branch=main)](https://coveralls.io/github/lpenz/andex?branch=main)
 
-# cludex
+# andex
 
-*cludex* (exCLUsive inDEXes) is a single-file, zero-dependency, rust
+*andex* (Array iNDEX) is a single-file, zero-dependency, rust
 crate that helps us create a strongly-typed, zero-cost, safe array
 index and the corresponding array type.
 
@@ -15,18 +15,18 @@ references.
 ## Basic usage
 
 ```rust
-use cludex::*;
-use cludex::impl_cludex_for;
+use andex::*;
+use andex::impl_andex_for;
 
 // Create the type alias:
-type MyIdx = Cludex<12>;
+type MyIdx = Andex<12>;
 
 // Create the array wrapper:
 #[derive(Default)]
 pub struct MyU32([u32; MyIdx::SIZE]);
 
-// Use `impl_cludex_for` to make it indexable:
-impl_cludex_for!(MyU32, u32, MyIdx);
+// Use `impl_andex_for` to make it indexable:
+impl_andex_for!(MyU32, u32, MyIdx);
 
 fn example() {
     // Iterate:
@@ -45,10 +45,10 @@ fn example() {
 
 ## Creating index instances
 
-When a clundex is created, it knows *at compile time* the size of the
+When an andex is created, it knows *at compile time* the size of the
 array it indexes, and all instances are assumed to be within bounds.
 
-For this reason, it's useful to limit the way cludex's are
+For this reason, it's useful to limit the way andex's are
 created. The ways we can get an instance is:
 
 - Via `new`, passing the value as a generic const argument:
@@ -58,7 +58,7 @@ created. The ways we can get an instance is:
   This checks that the value is valid at compile time, as long as you
   use it to create `const` variables.
 
-- Via `try_from`, which returns `Result<Cludex,Error>` that has to be
+- Via `try_from`, which returns `Result<Andex,Error>` that has to be
   checked or explicitly ignored:
   ```rust
   if let Ok(first) = Idx::try_from(0) {
@@ -82,28 +82,28 @@ bound check when indexing.
 ## Creating the indexable array wrapper
 
 To use the index, we first create the array wrapper, and then use the
-`impl_cludex_for` to make it indexable by the clundex:
+`impl_andex_for` to make it indexable by the andex:
 
 ```rust
 pub struct ArrayWrapper([u32; 12])
 
-impl_cludex_for!(ArrayWrapper, u32, Idx);
+impl_andex_for!(ArrayWrapper, u32, Idx);
 ```
 
 This macro creates the appropriate `Index` and `IndexMut`
 implementations. These implementations use `get_unchecked` and
 `get_unchecked_mut` under the wraps, as the array bounds are checked
-when the clundex instance is created and we don't have to check them
+when the andex instance is created and we don't have to check them
 again.
 
-Note: the user is responsible for making the limit of the clundex and
+Note: the user is responsible for making the limit of the andex and
 the wrapper equal.
 
 
 ## Full example
 
 ```rust
-use cludex::*;
+use andex::*;
 use std::convert::TryFrom;
 
 /// A player with score
@@ -117,10 +117,10 @@ pub struct Player {
 pub struct Players([Player; 4]);
 
 /// The player identifier
-type PlayerId = Cludex<4>;
+type PlayerId = Andex<4>;
 
 // Make Players[PlayerId] work
-impl_cludex_for!(Players, Player, PlayerId);
+impl_andex_for!(Players, Player, PlayerId);
 
 /// The game state
 #[derive(Default)]

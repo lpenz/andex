@@ -2,7 +2,7 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of this source code package.
 
-use cludex::*;
+use andex::*;
 use std::convert::TryFrom;
 
 // A player with score
@@ -16,10 +16,10 @@ pub struct Player {
 pub struct Players([Player; 4]);
 
 // The player identifier
-type PlayerId = Cludex<4>;
+type PlayerId = Andex<4>;
 
 // Make Players[PlayerId] work
-impl_cludex_for!(Players, Player, PlayerId);
+impl_andex_for!(Players, Player, PlayerId);
 
 // A piece on the board
 #[derive(Default)]
@@ -33,10 +33,10 @@ pub struct Piece {
 pub struct Pieces([Piece; 32]);
 
 // The player identifier
-type PieceId = Cludex<32>;
+type PieceId = Andex<32>;
 
 // Make Pieces[PieceId] work
-impl_cludex_for!(Pieces, Piece, PieceId);
+impl_andex_for!(Pieces, Piece, PieceId);
 
 #[derive(Default)]
 pub struct Game {
