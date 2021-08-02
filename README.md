@@ -9,7 +9,8 @@ index and the corresponding array type.
 
 This is specially useful in scenarios where we have different arrays
 inside a `struct` and we want reference members without holding "hard"
-references.
+references. May also be useful when programming an
+[Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system).
 
 
 ## Basic usage
