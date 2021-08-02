@@ -6,9 +6,9 @@
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs, rustdoc::missing_doc_code_examples)]
 
-//! *andex* (exCLUsive inDEXes) is a single-file, zero-dependency rust
-//! crate that helps us create a strongly-typed, zero-cost, safe array
-//! index and use it to index a custom array wrapper.
+//! *andex* is a single-file, zero-dependency rust crate that helps us
+//! create a strongly-typed, zero-cost, safe array index and use it to
+//! index a custom array wrapper.
 //!
 //! This is specially useful in scenarios where we have different arrays
 //! inside a `struct` and we want reference members without holding "hard"
@@ -51,9 +51,9 @@ use std::convert;
 use std::error;
 use std::fmt;
 
-/// exCLUsive inDEX generic type
+/// Array index generic type
 ///
-/// This is the type of the exclusive index that receives the size of
+/// This is the type of the array index that receives the size of
 /// the array as a const generic `SIZE` parameter.
 ///
 /// Note: the maximum numerical value in the andex is `SIZE - 1`.
