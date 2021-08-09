@@ -23,6 +23,8 @@ fn test_basic() -> Result<()> {
     assert_eq!(usize::from(J), 2_usize);
     let k: C = C::new::<1>();
     assert_eq!(usize::from(k), 1_usize);
+    assert_eq!(usize::from(C::try_from(2)?), 2);
+    assert!(C::try_from(3).is_err());
     Ok(())
 }
 
@@ -41,28 +43,6 @@ fn test_oob1() {
 //     assert_eq!(usize::from(u), 5_usize);
 // }
 
-/* Tests for arrays: */
-
-#[derive(Default)]
-struct Marr([u32; 5]);
-type Mandex = Andex<5>;
-impl_andex_for!(Marr, u32, Mandex);
-impl_deref_for!(Marr, u32, Mandex);
-
-#[test]
-fn test_marr() -> Result<()> {
-    let mut m = Marr::default();
-    m[Andex::new::<2>()] = 5;
-    for (num, i) in Mandex::iter().enumerate() {
-        m[i] = num as u32 + 20;
-    }
-    for (num, i) in Mandex::iter().enumerate() {
-        assert_eq!(m[i], num as u32 + 20);
-    }
-    let _ = m.iter().map(|i| i);
-    Ok(())
-}
-
 #[test]
 fn test_try_from() {
     let result = C::try_from(5);
@@ -75,7 +55,6 @@ fn test_try_from() {
 }
 
 /* Test automatic traits */
-
 #[test]
 fn test_send() {
     fn assert_send<T: Send>() {}

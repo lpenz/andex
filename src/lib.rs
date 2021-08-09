@@ -173,7 +173,7 @@ impl<const SIZE: usize> convert::TryFrom<usize> for Andex<SIZE> {
 
 impl<const SIZE: usize> fmt::Display for Andex<SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.into_usize())
+        write!(f, "{}", usize::from(*self))
     }
 }
 
