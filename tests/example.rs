@@ -6,37 +6,31 @@ use andex::*;
 use std::convert::TryFrom;
 
 // A player with score
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct Player {
     pub score: i32,
 }
 
-// All players in the game
-#[derive(Default)]
-pub struct Players([Player; 4]);
-
 // The player identifier
-type PlayerId = Andex<4>;
+pub enum PlayerIdMarker {}
+type PlayerId = Andex<PlayerIdMarker, 4>;
 
-// Make Players[PlayerId] work
-impl_andex_for!(Players, Player, PlayerId);
+// All players in the game
+type Players = AndexableArray<PlayerId, Player, { PlayerId::SIZE }>;
 
 // A piece on the board
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct Piece {
     pub owner: PlayerId,
     pub position: i32,
 }
 
+// The piece identifier
+pub enum PieceIdMarker {}
+type PieceId = Andex<PieceIdMarker, 32>;
+
 // All pieces in the game
-#[derive(Default)]
-pub struct Pieces([Piece; 32]);
-
-// The player identifier
-type PieceId = Andex<32>;
-
-// Make Pieces[PieceId] work
-impl_andex_for!(Pieces, Piece, PieceId);
+type Pieces = AndexableArray<PieceId, Piece, { PieceId::SIZE }>;
 
 #[derive(Default)]
 pub struct Game {

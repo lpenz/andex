@@ -10,23 +10,22 @@ use anyhow::Result;
 
 /* Tests for arrays: */
 
-#[derive(Default)]
-struct Marr([u32; 5]);
-type Mandex = Andex<5>;
-impl_andex_for!(Marr, u32, Mandex);
-impl_deref_for!(Marr, u32, Mandex);
+pub struct MyIdxInner;
+type MyIdx = Andex<MyIdxInner, 12>;
+
+type MyArray = AndexableArray<MyIdx, u32, 12>;
 
 #[test]
 fn test_marr() -> Result<()> {
-    let mut m = Marr::default();
-    m[Mandex::new::<2>()] = 5;
-    m[Mandex::try_from(2)?] = 5;
-    for (num, i) in Mandex::iter().enumerate() {
+    let mut m = MyArray::default();
+    m[MyIdx::new::<2>()] = 5;
+    m[MyIdx::try_from(2)?] = 5;
+    for (num, i) in MyIdx::iter().enumerate() {
         m[i] = num as u32 + 20;
     }
-    for (num, i) in Mandex::iter().enumerate() {
+    for (num, i) in MyIdx::iter().enumerate() {
         assert_eq!(m[i], num as u32 + 20);
     }
-    let _ = m.iter().map(|i| i);
+    let _ = MyIdx::iter().map(|i| i);
     Ok(())
 }

@@ -10,13 +10,16 @@ use anyhow::Result;
 
 /* Basic tests */
 
-type C = Andex<3>;
+enum Marker {}
+type C = Andex<Marker, 3>;
 
 #[test]
 fn test_basic() -> Result<()> {
     for i in C::iter() {
         assert!(usize::from(i) < 3_usize);
     }
+    let is = C::iter().map(usize::from).collect::<Vec<_>>();
+    assert_eq!(is, vec![0, 1, 2]);
     let i = C::default();
     assert_eq!(usize::from(i), 0_usize);
     const J: C = C::new::<2>();
@@ -35,11 +38,11 @@ fn test_oob1() {
     assert_eq!(usize::from(u), 5_usize);
 }
 
-// This doesn't compile, which is correct:
+// // This doesn't compile, which is correct:
 // #[test]
 // #[should_panic]
 // fn test_oob2() {
-//     const u: Andex<3> = Andex::<3>::new::<5>();
+//     const u: C = C::new::<5>();
 //     assert_eq!(usize::from(u), 5_usize);
 // }
 
@@ -55,6 +58,7 @@ fn test_try_from() {
 }
 
 /* Test automatic traits */
+
 #[test]
 fn test_send() {
     fn assert_send<T: Send>() {}
