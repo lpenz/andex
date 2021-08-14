@@ -108,7 +108,7 @@
 //! // We can create other arrays indexable by the same Andex:
 //! type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 //!
-//! fn example() {
+//! fn main() {
 //!     let myu32 = MyU32::default();
 //!
 //!     // We can now only index MyU32 using MyIdx
@@ -153,7 +153,7 @@
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
-//! fn example() {
+//! fn main() {
 //!     let myu32 = MyU32::default();
 //!
 //!     println!("{}", myu32[0]);
@@ -169,7 +169,7 @@
 //! enum MyIdxMarker {};
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //!
-//! fn example() {
+//! fn main() {
 //!     const myidx : MyIdx = MyIdx::new::<13>();
 //! }
 //! ```
@@ -191,7 +191,7 @@
 //! type TheirIdx = Andex<TheirIdxMarker, 12>;
 //! type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
 //!
-//! fn example() {
+//! fn main() {
 //!     let myu32 = MyU32::default();
 //!     let theirIdx = TheirIdx::new::<0>();
 //!
@@ -298,10 +298,8 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     /// pub struct PlayerIdMarker;
     /// type PlayerId = Andex<PlayerIdMarker, 12>;
     ///
-    /// fn function() {
-    ///     for i in PlayerId::iter() {
-    ///         println!("{}", i);
-    ///     }
+    /// for i in PlayerId::iter() {
+    ///     println!("{}", i);
     /// }
     /// ```
     pub fn iter() -> AndexIterator<Self> {
@@ -378,10 +376,8 @@ impl<M, const SIZE: usize> fmt::Display for Andex<M, SIZE> {
 /// pub struct PlayerIdMarker;
 /// type PlayerId = Andex<PlayerIdMarker, 12>;
 ///
-/// fn function() {
-///     for i in PlayerId::iter() {
-///         println!("{}", i);
-///     }
+/// for i in PlayerId::iter() {
+///     println!("{}", i);
 /// }
 /// ```
 #[derive(Debug)]
@@ -435,7 +431,7 @@ where
 /// // We can create other arrays with the same Andex type:
 /// type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 ///
-/// fn example() {
+/// fn main() {
 ///     // Create a default array:
 ///     let myu32 = MyU32::default();
 ///     // Print the first element:
@@ -445,6 +441,8 @@ where
 ///     for i in MyIdx::iter() {
 ///         println!("{:?}", myu32[i]);
 ///     }
+///     // Print the whole array
+///     println!("{:?}", myu32);
 /// }
 /// ```
 #[derive(Debug)]
@@ -488,7 +486,7 @@ impl<A, Item, const SIZE: usize> std::ops::IndexMut<Andex<A, SIZE>>
 /// enum MyIdxMarker {};
 /// type MyIdx = Andex<MyIdxMarker, 12>;
 ///
-/// fn example() {
+/// fn main() {
 ///     println!("{:?}", MyIdx::try_from(15_usize));
 /// }
 /// ```

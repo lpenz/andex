@@ -50,7 +50,7 @@ impl Game {
         // the index bound is checked at compile time.
         // If we want to create an index at run time, we have to use
         // TryInto/TryFrom, which returns Result:
-        if let Ok(playerid) = PlayerId::try_from(8) {
+        if let Ok(playerid) = PlayerId::try_from(1) {
             self.players[playerid].score = 9;
         }
     }

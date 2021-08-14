@@ -28,6 +28,7 @@ fn test_basic() -> Result<()> {
     assert_eq!(usize::from(k), 1_usize);
     assert_eq!(usize::from(C::try_from(2)?), 2);
     assert!(C::try_from(3).is_err());
+    let _u = k.clone();
     Ok(())
 }
 
@@ -49,12 +50,24 @@ fn test_oob1() {
 #[test]
 fn test_try_from() {
     let result = C::try_from(5);
+    assert!(result.is_err());
     if let Err(ref err) = result {
         println!("{}, {:?}", err, err);
         let _ = err.clone();
-    } else {
-        panic!("wrong error!");
     }
+}
+
+/* Iterator */
+
+#[test]
+fn test_iterator() {
+    let mut it = C::iter();
+    println!("{:?}", it);
+    assert_eq!(usize::from(it.next().unwrap()), 0);
+    assert_eq!(usize::from(it.next().unwrap()), 1);
+    assert_eq!(usize::from(it.next().unwrap()), 2);
+    assert!(it.next().is_none());
+    assert!(it.next().is_none());
 }
 
 /* Test automatic traits */
