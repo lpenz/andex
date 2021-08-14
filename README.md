@@ -1,6 +1,7 @@
 [![CI](https://github.com/lpenz/andex/actions/workflows/ci.yml/badge.svg)](https://github.com/lpenz/andex/actions/workflows/ci.yml)
 [![coveralls](https://coveralls.io/repos/github/lpenz/andex/badge.svg?branch=main)](https://coveralls.io/github/lpenz/andex?branch=main)
 [![crates.io](https://img.shields.io/crates/v/andex)](https://crates.io/crates/andex)
+[![doc.rs](https://docs.rs/andex/badge.svg)](https://docs.rs/andex)
 
 # andex
 
