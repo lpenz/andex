@@ -75,6 +75,12 @@ fn test_parse() {
     assert!(c.is_err());
 }
 
+#[test]
+fn test_pair() {
+    let f: C = C::FIRST;
+    assert_eq!(f.pair(), C::LAST);
+}
+
 /* Iterator */
 
 #[test]

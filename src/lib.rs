@@ -4,6 +4,7 @@
 
 #![warn(rust_2018_idioms)]
 #![warn(missing_debug_implementations)]
+#![warn(missing_docs)]
 
 //! *andex* (Array iNDEX) is a single-file, zero-dependency rust
 //! crate that helps us create a strongly-typed, zero-cost, numerically
@@ -283,6 +284,12 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     /// andex indexes.
     pub const SIZE: usize = SIZE;
 
+    /// The first possible value.
+    pub const FIRST: Andex<M, SIZE> = Andex(PhantomData, 0);
+
+    /// The last possible value.
+    pub const LAST: Andex<M, SIZE> = Andex(PhantomData, SIZE - 1);
+
     /// Create a new andex instance
     ///
     /// We recomment using this method in `const` contexts, passing
@@ -315,6 +322,16 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
         const ASSERT: [(); 1] = [(); 1];
         let _ = ASSERT[(N >= SIZE) as usize];
         Andex(PhantomData, N)
+    }
+
+    /// Returns the pair of the provided Andex.
+    ///
+    /// The "pair" is the element that is at the same distance from
+    /// the center. This definition is useful in some contexts. For
+    /// instance, the pair of [`Self::FIRST`] is [`Self::LAST`].
+    #[inline]
+    pub const fn pair(self) -> Self {
+        Andex(PhantomData, SIZE - self.1 - 1)
     }
 
     /// Indexes the provided array
@@ -701,6 +718,7 @@ pub enum Error {
         /// The maximum value accepted is `SIZE - 1`
         size: usize,
     },
+    /// Underlying ParseIntError from integer parsing
     ParseIntError(num::ParseIntError),
 }
 
