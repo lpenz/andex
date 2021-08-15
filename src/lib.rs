@@ -202,10 +202,13 @@
 
 use std::cmp;
 use std::convert;
+use std::convert::TryFrom;
 use std::error;
 use std::fmt;
 use std::marker::PhantomData;
+use std::num;
 use std::ops;
+use std::str;
 
 /* Andex index type */
 
@@ -382,6 +385,14 @@ impl<M, const SIZE: usize> fmt::Debug for Andex<M, SIZE> {
 impl<M, const SIZE: usize> fmt::Display for Andex<M, SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", usize::from(self))
+    }
+}
+
+impl<M, const SIZE: usize> str::FromStr for Andex<M, SIZE> {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(usize::from_str(s)?)
     }
 }
 
@@ -635,7 +646,7 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 ///     println!("{:?}", MyIdx::try_from(15_usize));
 /// }
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Error {
     /// Tried to use a out-of-bounds value to create an andex
     OutOfBounds {
@@ -647,9 +658,16 @@ pub enum Error {
         /// The maximum value accepted is `SIZE - 1`
         size: usize,
     },
+    ParseIntError(num::ParseIntError),
 }
 
 impl error::Error for Error {}
+
+impl From<num::ParseIntError> for Error {
+    fn from(err: num::ParseIntError) -> Self {
+        Error::ParseIntError(err)
+    }
+}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -662,6 +680,7 @@ impl fmt::Display for Error {
                 "value {} is out-of-bounds for index with size {}",
                 value, size
             ),
+            Error::ParseIntError(err) => write!(f, "{}", err),
         }
     }
 }

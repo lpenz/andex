@@ -58,6 +58,23 @@ fn test_try_from() {
     }
 }
 
+#[test]
+fn test_parse() {
+    let c = "0".parse::<C>();
+    assert!(c.is_ok());
+    assert_eq!(usize::from(c.unwrap()), 0_usize);
+    let c = "asdf".parse::<C>();
+    if let Err(ref err) = c {
+        println!("{}", err);
+    }
+    assert!(c.is_err());
+    let c = "4".parse::<C>();
+    if let Err(ref err) = c {
+        println!("{}", err);
+    }
+    assert!(c.is_err());
+}
+
 /* Iterator */
 
 #[test]
