@@ -28,7 +28,8 @@ fn test_basic() -> Result<()> {
     assert_eq!(usize::from(k), 1_usize);
     assert_eq!(usize::from(C::try_from(2)?), 2);
     assert!(C::try_from(3).is_err());
-    let _u = k.clone();
+    let u = k.clone();
+    assert_eq!(u, k);
     Ok(())
 }
 
@@ -63,8 +64,12 @@ fn test_try_from() {
 fn test_iterator() {
     let mut it = C::iter();
     println!("{:?}", it);
-    assert_eq!(usize::from(it.next().unwrap()), 0);
-    assert_eq!(usize::from(it.next().unwrap()), 1);
+    let first = it.next().unwrap();
+    assert_eq!(usize::from(first), 0);
+    let second = it.next().unwrap();
+    assert_eq!(usize::from(second), 1);
+    assert!(first < second);
+    assert!(first <= first);
     assert_eq!(usize::from(it.next().unwrap()), 2);
     assert!(it.next().is_none());
     assert!(it.next().is_none());

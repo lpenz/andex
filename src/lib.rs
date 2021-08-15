@@ -200,10 +200,14 @@
 //! }
 //! ```
 
+use std::cmp;
 use std::convert;
 use std::error;
 use std::fmt;
 use std::marker::PhantomData;
+use std::ops;
+
+/* Andex index type */
 
 /// Array index generic type
 ///
@@ -326,6 +330,26 @@ impl<M, const SIZE: usize> Default for Andex<M, SIZE> {
     }
 }
 
+impl<M, const SIZE: usize> PartialEq for Andex<M, SIZE> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<M, const SIZE: usize> Eq for Andex<M, SIZE> {}
+
+impl<M, const SIZE: usize> PartialOrd for Andex<M, SIZE> {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<M, const SIZE: usize> Ord for Andex<M, SIZE> {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        self.1.cmp(&other.1)
+    }
+}
+
 impl<M, const SIZE: usize> From<Andex<M, SIZE>> for usize {
     fn from(andex: Andex<M, SIZE>) -> Self {
         andex.1
@@ -415,6 +439,8 @@ where
     }
 }
 
+/* Array wrapper */
+
 /// Array wrapper indexable by the provided Andex type.
 ///
 /// Example:
@@ -454,7 +480,7 @@ impl<A, Item: Default + Copy, const SIZE: usize> Default for AndexableArray<A, I
     }
 }
 
-impl<A, Item, const SIZE: usize> std::ops::Index<Andex<A, SIZE>>
+impl<A, Item, const SIZE: usize> ops::Index<Andex<A, SIZE>>
     for AndexableArray<Andex<A, SIZE>, Item, SIZE>
 {
     type Output = Item;
@@ -463,11 +489,130 @@ impl<A, Item, const SIZE: usize> std::ops::Index<Andex<A, SIZE>>
     }
 }
 
-impl<A, Item, const SIZE: usize> std::ops::IndexMut<Andex<A, SIZE>>
+impl<A, Item, const SIZE: usize> ops::IndexMut<Andex<A, SIZE>>
     for AndexableArray<Andex<A, SIZE>, Item, SIZE>
 {
     fn index_mut(&mut self, index: Andex<A, SIZE>) -> &mut Item {
         index.index_arr_mut(&mut self.0)
+    }
+}
+
+impl<A, Item, const SIZE: usize> convert::AsRef<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
+    fn as_ref(&self) -> &[Item; SIZE] {
+        &self.0
+    }
+}
+
+impl<A, Item, const SIZE: usize> convert::AsMut<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
+    fn as_mut(&mut self) -> &mut [Item; SIZE] {
+        &mut self.0
+    }
+}
+
+impl<A, Item, const SIZE: usize> From<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
+    fn from(array: [Item; SIZE]) -> Self {
+        Self(array, PhantomData)
+    }
+}
+
+impl<A, Item, const SIZE: usize> From<&[Item; SIZE]> for AndexableArray<A, Item, SIZE>
+where
+    Item: Copy,
+{
+    fn from(array: &[Item; SIZE]) -> Self {
+        Self(*array, PhantomData)
+    }
+}
+
+impl<A, Item, const SIZE: usize> From<AndexableArray<A, Item, SIZE>> for [Item; SIZE]
+where
+    Item: Copy,
+{
+    fn from(andexable_array: AndexableArray<A, Item, SIZE>) -> [Item; SIZE] {
+        andexable_array.0
+    }
+}
+
+impl<A, Item, const SIZE: usize> From<&AndexableArray<A, Item, SIZE>> for [Item; SIZE]
+where
+    Item: Copy,
+{
+    fn from(andexable_array: &AndexableArray<A, Item, SIZE>) -> [Item; SIZE] {
+        andexable_array.0
+    }
+}
+
+impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> {
+    type Item = Item;
+    type IntoIter = std::array::IntoIter<Item, SIZE>;
+    fn into_iter(self) -> Self::IntoIter {
+        std::array::IntoIter::new(self.0)
+    }
+}
+
+impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a AndexableArray<A, Item, SIZE> {
+    type Item = &'a Item;
+    type IntoIter = std::slice::Iter<'a, Item>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
+    }
+}
+
+impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a mut AndexableArray<A, Item, SIZE> {
+    type Item = &'a mut Item;
+    type IntoIter = std::slice::IterMut<'a, Item>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter_mut()
+    }
+}
+
+impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArray<A, Item, SIZE> {
+    fn from_iter<I: core::iter::IntoIterator<Item = Item>>(intoiter: I) -> Self {
+        let mut andexable = AndexableArray::<A, Item, SIZE>(
+            #[allow(clippy::uninit_assumed_init)]
+            unsafe {
+                std::mem::MaybeUninit::uninit().assume_init()
+            },
+            PhantomData,
+        );
+        let mut iter = intoiter.into_iter();
+        for item in &mut andexable {
+            if let Some(fromiter) = iter.next() {
+                *item = fromiter;
+            } else {
+                panic!("iterator too short for andexable type");
+            }
+        }
+        if iter.next().is_some() {
+            panic!("iterator too long for andexable type");
+        }
+        andexable
+    }
+}
+
+impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Item>
+    for AndexableArray<A, Item, SIZE>
+{
+    fn from_iter<I: core::iter::IntoIterator<Item = &'a Item>>(intoiter: I) -> Self {
+        let mut andexable = AndexableArray::<A, Item, SIZE>(
+            #[allow(clippy::uninit_assumed_init)]
+            unsafe {
+                std::mem::MaybeUninit::uninit().assume_init()
+            },
+            PhantomData,
+        );
+        let mut iter = intoiter.into_iter();
+        for item in &mut andexable {
+            if let Some(&fromiter) = iter.next() {
+                *item = fromiter;
+            } else {
+                panic!("iterator too short for andexable type");
+            }
+        }
+        if iter.next().is_some() {
+            panic!("iterator too long for andexable type");
+        }
+        andexable
     }
 }
 
