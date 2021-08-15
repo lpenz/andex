@@ -5,13 +5,17 @@
 #![warn(rust_2018_idioms)]
 #![warn(missing_debug_implementations)]
 
-//! *andex* is a single-file, zero-dependency rust crate that helps us
-//! create a strongly-typed, zero-cost, safe array index and use it to
-//! index an array wrapper.
+//! *andex* (Array iNDEX) is a single-file, zero-dependency rust
+//! crate that helps us create a strongly-typed, zero-cost, numerically
+//! bound array index and the corresponding array type with the provided
+//! size. The index is safe in the sense that an out-of-bounds value can't
+//! be created, and the array type can't be indexed by any other types.
 //!
-//! This is specially useful in scenarios where we have different arrays
-//! inside a `struct` and we want reference members without holding "hard"
-//! references to those members.
+//! This is useful in scenarios where we have different arrays inside a
+//! `struct` and we want reference members without holding proper
+//! references that could "lock" the whole `struct`. It may also be useful
+//! when programming an
+//! [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system).
 //!
 //! And it's all done without requiring the use of any macros.
 //!
@@ -62,7 +66,7 @@
 //!   This checks that the value is valid at compile time, as long as you
 //!   use it to create `const` variables.
 //!
-//! - Via `try_from`, which returns `Result<Andex,Error>` that has to be
+//! - Via `try_from`, which returns `Result<Andex, Error>` that has to be
 //!   checked or explicitly ignored:
 //!   ```rust
 //!   # use std::convert::TryFrom;
@@ -89,9 +93,48 @@
 //! implementation, which provides a bit of optimization by preventing the
 //! bound check when indexing.
 //!
+//! ## Creating andexable arrays
+//!
+//! [`AndexableArray`] instances are less restrictive. They can be created
+//! in several more ways:
+//! - Using `Default` if the underlying type supports it:
+//!   ```rust
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+//!
+//!   let myu32 = MyU32::default();
+//!   ```
+//! - Using `From` with an appropriate array:
+//!   ```rust
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+//!   let myu32 = MyU32::from([8; MyIdx::SIZE]);
+//!   ```
+//! - Collecting an iterator with the proper elements and size:
+//!   ```rust
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+//!   let myu32 = (0..12).collect::<MyU32>();
+//!   ```
+//!   Note: `collect` panics if the iterator returns a different
+//!   number of elements.
+//!
+//! ## Using andexable arrays
+//!
+//! Besides indexing them with a coupled `Andex` instance, we can
+//! also access the inner array by using `as_ref`, iterate it in a
+//! `for` loop (using one of the `IntoIterator` implementations) or
+//! even get the inner array by consuming the `AndexableArray`.
+//!
 //! # Full example
 //!
-//! ```
+//! ```rust
 //! use std::convert::TryFrom;
 //! use andex::*;
 //!

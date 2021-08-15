@@ -3,6 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/andex)](https://crates.io/crates/andex)
 [![doc.rs](https://docs.rs/andex/badge.svg)](https://docs.rs/andex)
 
+
 # andex
 
 *andex* (Array iNDEX) is a single-file, zero-dependency rust
@@ -17,13 +18,13 @@ references that could "lock" the whole `struct`. It may also be useful
 when programming an
 [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system).
 
+And it's all done without requiring the use of any macros.
 
 ## Usage
 
+### Creating the andex types
 
-### Creating the andex type and array
-
-`Andex` is the index type and `AndexableArray` is the type of
+[`Andex`] is the index type and [`AndexableArray`] is the type of
 the array wrapper.
 
 The recommended approach to use andex is as follows:
@@ -31,17 +32,16 @@ The recommended approach to use andex is as follows:
   ```rust
   enum MyIdxMarker {};
   ```
-- Create a type alias for the `Andex` type that's parameterized
+- Create a type alias for the [`Andex`] type that's parameterized
   with that type:
   ```rust
   type MyIdx = Andex<MyIdxMarker, 12>;
   ```
-- Create a type alias for the `AndexableArray` type that's
-  indexed by the `Andex` alias created above:
+- Create a type alias for the [`AndexableArray`] type that's
+  indexed by the [`Andex`] alias created above:
   ```rust
   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
   ```
-
 
 ### Creating andex instances
 
@@ -78,10 +78,38 @@ to use `get_unsafe` and `get_unsafe_mut` in the indexer
 implementation, which provides a bit of optimization by preventing the
 bound check when indexing.
 
+### Creating andexable arrays
+
+[`AndexableArray`] instances are less restrictive. They can be created
+in several more ways:
+- Using `Default` if the underlying type supports it:
+  ```rust
+  type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+
+  let myu32 = MyU32::default();
+  ```
+- Using `From` with an appropriate array:
+  ```rust
+  let myu32 = MyU32::from([8; MyIdx::SIZE]);
+  ```
+- Collecting an iterator with the proper elements and size:
+  ```rust
+  let myu32 = (0..12).collect::<MyU32>();
+  ```
+  Note: `collect` panics if the iterator returns a different
+  number of elements.
+
+### Using andexable arrays
+
+Besides indexing them with a coupled `Andex` instance, we can
+also access the inner array by using `as_ref`, iterate it in a
+`for` loop (using one of the `IntoIterator` implementations) or
+even get the inner array by consuming the `AndexableArray`.
 
 ## Full example
 
 ```rust
+use std::convert::TryFrom;
 use andex::*;
 
 // Create the andex type alias:
@@ -97,7 +125,7 @@ type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 // We can create other arrays indexable by the same Andex:
 type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 
-fn example() {
+fn main() {
     let myu32 = MyU32::default();
 
     // We can now only index MyU32 using MyIdx
@@ -126,7 +154,6 @@ fn example() {
 }
 ```
 
-
 ## Alternatives
 
 These alternatives may fit better cases where we need unbound indexes
@@ -134,4 +161,8 @@ These alternatives may fit better cases where we need unbound indexes
 
 - [safe_index](https://crates.io/crates/safe_index)
 - [typed-index-collections](https://crates.io/crates/typed-index-collections)
+
+
+[`Andex`]: https://docs.rs/andex/0/andex/struct.Andex.html
+[`AndexableArray`]: https://docs.rs/andex/0/andex/struct.AndexableArray.html
 
