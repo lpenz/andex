@@ -57,6 +57,8 @@ fn test_conversions() -> Result<()> {
     assert_eq!(myarray3.as_ref(), &array3);
     let myarray4 = array3.iter().cloned().collect::<MyArray>();
     assert_eq!(myarray4.as_ref(), &array3);
+    let _myarray5 = myarray4.clone();
+    let _myarray6 = *&myarray4;
     Ok(())
 }
 

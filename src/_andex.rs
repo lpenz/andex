@@ -312,6 +312,14 @@ where
 #[derive(Debug)]
 pub struct AndexableArray<A, Item, const SIZE: usize>([Item; SIZE], PhantomData<A>);
 
+impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<A, Item: Copy, const SIZE: usize> Copy for AndexableArray<A, Item, SIZE> {}
+
 impl<A, Item: Default + Copy, const SIZE: usize> Default for AndexableArray<A, Item, SIZE> {
     fn default() -> Self {
         AndexableArray([Default::default(); SIZE], Default::default())
