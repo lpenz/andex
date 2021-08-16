@@ -343,6 +343,23 @@ impl<A, Item, const SIZE: usize> ops::IndexMut<Andex<A, SIZE>>
     }
 }
 
+impl<A, Item, const SIZE: usize> ops::Index<&Andex<A, SIZE>>
+    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+{
+    type Output = Item;
+    fn index(&self, index: &Andex<A, SIZE>) -> &Self::Output {
+        index.index_arr(&self.1)
+    }
+}
+
+impl<A, Item, const SIZE: usize> ops::IndexMut<&Andex<A, SIZE>>
+    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+{
+    fn index_mut(&mut self, index: &Andex<A, SIZE>) -> &mut Item {
+        index.index_arr_mut(&mut self.1)
+    }
+}
+
 impl<A, Item, const SIZE: usize> convert::AsRef<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
     fn as_ref(&self) -> &[Item; SIZE] {
         &self.1

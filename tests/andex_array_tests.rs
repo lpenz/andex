@@ -29,6 +29,12 @@ fn test_myarr() -> Result<()> {
     for (num, i) in MyIdx::iter().enumerate() {
         assert_eq!(m[i], num as u32 + 20);
     }
+    for (num, i) in MyIdx::iter().enumerate() {
+        m[&i] = num as u32 + 30;
+    }
+    for (num, i) in MyIdx::iter().enumerate() {
+        assert_eq!(m[&i], num as u32 + 30);
+    }
     let _ = MyIdx::iter().map(|i| i);
     println!("{:?}", m);
     Ok(())
