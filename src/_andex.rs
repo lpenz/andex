@@ -162,7 +162,7 @@ impl<M, const SIZE: usize> Default for Andex<M, SIZE> {
 
 impl<M, const SIZE: usize> PartialEq for Andex<M, SIZE> {
     fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
+        self.1 == other.1
     }
 }
 
@@ -310,11 +310,11 @@ where
 /// }
 /// ```
 #[derive(Debug)]
-pub struct AndexableArray<A, Item, const SIZE: usize>([Item; SIZE], PhantomData<A>);
+pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZE]);
 
 impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
     fn clone(&self) -> Self {
-        *self
+        AndexableArray::<A, Item, SIZE>::from(self.1)
     }
 }
 
@@ -322,7 +322,7 @@ impl<A, Item: Copy, const SIZE: usize> Copy for AndexableArray<A, Item, SIZE> {}
 
 impl<A, Item: Default + Copy, const SIZE: usize> Default for AndexableArray<A, Item, SIZE> {
     fn default() -> Self {
-        AndexableArray([Default::default(); SIZE], Default::default())
+        AndexableArray(Default::default(), [Default::default(); SIZE])
     }
 }
 
@@ -331,7 +331,7 @@ impl<A, Item, const SIZE: usize> ops::Index<Andex<A, SIZE>>
 {
     type Output = Item;
     fn index(&self, index: Andex<A, SIZE>) -> &Self::Output {
-        index.index_arr(&self.0)
+        index.index_arr(&self.1)
     }
 }
 
@@ -339,25 +339,25 @@ impl<A, Item, const SIZE: usize> ops::IndexMut<Andex<A, SIZE>>
     for AndexableArray<Andex<A, SIZE>, Item, SIZE>
 {
     fn index_mut(&mut self, index: Andex<A, SIZE>) -> &mut Item {
-        index.index_arr_mut(&mut self.0)
+        index.index_arr_mut(&mut self.1)
     }
 }
 
 impl<A, Item, const SIZE: usize> convert::AsRef<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
     fn as_ref(&self) -> &[Item; SIZE] {
-        &self.0
+        &self.1
     }
 }
 
 impl<A, Item, const SIZE: usize> convert::AsMut<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
     fn as_mut(&mut self) -> &mut [Item; SIZE] {
-        &mut self.0
+        &mut self.1
     }
 }
 
 impl<A, Item, const SIZE: usize> From<[Item; SIZE]> for AndexableArray<A, Item, SIZE> {
     fn from(array: [Item; SIZE]) -> Self {
-        Self(array, PhantomData)
+        Self(PhantomData, array)
     }
 }
 
@@ -366,7 +366,7 @@ where
     Item: Copy,
 {
     fn from(array: &[Item; SIZE]) -> Self {
-        Self(*array, PhantomData)
+        Self(PhantomData, *array)
     }
 }
 
@@ -375,7 +375,7 @@ where
     Item: Copy,
 {
     fn from(andexable_array: AndexableArray<A, Item, SIZE>) -> [Item; SIZE] {
-        andexable_array.0
+        andexable_array.1
     }
 }
 
@@ -384,7 +384,7 @@ where
     Item: Copy,
 {
     fn from(andexable_array: &AndexableArray<A, Item, SIZE>) -> [Item; SIZE] {
-        andexable_array.0
+        andexable_array.1
     }
 }
 
@@ -392,7 +392,7 @@ impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> 
     type Item = Item;
     type IntoIter = std::array::IntoIter<Item, SIZE>;
     fn into_iter(self) -> Self::IntoIter {
-        std::array::IntoIter::new(self.0)
+        std::array::IntoIter::new(self.1)
     }
 }
 
@@ -400,7 +400,7 @@ impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a AndexableArray<A, Item
     type Item = &'a Item;
     type IntoIter = std::slice::Iter<'a, Item>;
     fn into_iter(self) -> Self::IntoIter {
-        self.0.iter()
+        self.1.iter()
     }
 }
 
@@ -408,18 +408,18 @@ impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a mut AndexableArray<A, 
     type Item = &'a mut Item;
     type IntoIter = std::slice::IterMut<'a, Item>;
     fn into_iter(self) -> Self::IntoIter {
-        self.0.iter_mut()
+        self.1.iter_mut()
     }
 }
 
 impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArray<A, Item, SIZE> {
     fn from_iter<I: core::iter::IntoIterator<Item = Item>>(intoiter: I) -> Self {
         let mut andexable = AndexableArray::<A, Item, SIZE>(
+            PhantomData,
             #[allow(clippy::uninit_assumed_init)]
             unsafe {
                 std::mem::MaybeUninit::uninit().assume_init()
             },
-            PhantomData,
         );
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
@@ -441,11 +441,11 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 {
     fn from_iter<I: core::iter::IntoIterator<Item = &'a Item>>(intoiter: I) -> Self {
         let mut andexable = AndexableArray::<A, Item, SIZE>(
+            PhantomData,
             #[allow(clippy::uninit_assumed_init)]
             unsafe {
                 std::mem::MaybeUninit::uninit().assume_init()
             },
-            PhantomData,
         );
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
