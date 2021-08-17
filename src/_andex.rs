@@ -101,6 +101,17 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
         Andex(PhantomData, SIZE - self.1 - 1)
     }
 
+    /// Return the next Andex in sequence, or None if it's the last one.
+    #[inline]
+    pub fn next(self) -> Option<Self> {
+        let i = usize::from(self);
+        if i < SIZE - 1 {
+            Some(Andex(PhantomData, i + 1))
+        } else {
+            None
+        }
+    }
+
     /// Indexes the provided array
     ///
     /// Used internally by the `Index` trait implementation.
@@ -136,8 +147,8 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     ///     println!("{}", i);
     /// }
     /// ```
-    pub fn iter() -> AndexIterator<Self> {
-        AndexIterator::<Self>::default()
+    pub fn iter() -> AndexIterator<M, SIZE> {
+        AndexIterator::<M, SIZE>::default()
     }
 }
 
@@ -242,35 +253,26 @@ impl<M, const SIZE: usize> str::FromStr for Andex<M, SIZE> {
 ///     println!("{}", i);
 /// }
 /// ```
-#[derive(Debug)]
-pub struct AndexIterator<A> {
-    next: Option<usize>,
-    phantom: PhantomData<A>,
-}
+pub struct AndexIterator<M, const SIZE: usize>(Option<Andex<M, SIZE>>);
 
-impl<A> Default for AndexIterator<A> {
-    fn default() -> Self {
-        AndexIterator {
-            next: Some(0),
-            phantom: PhantomData,
-        }
+impl<M, const SIZE: usize> fmt::Debug for AndexIterator<M, SIZE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "AndexIterator({:?})", self.0)
     }
 }
 
-impl<A> Iterator for AndexIterator<A>
-where
-    A: convert::TryFrom<usize>,
-{
-    type Item = A;
+impl<M, const SIZE: usize> Default for AndexIterator<M, SIZE> {
+    fn default() -> Self {
+        AndexIterator(Some(Andex::<M, SIZE>::default()))
+    }
+}
+
+impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
+    type Item = Andex<M, SIZE>;
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(i) = self.next.take() {
-            let value = A::try_from(i).ok();
-            if value.is_some() {
-                self.next = Some(i + 1);
-            } else {
-                self.next = None;
-            }
-            value
+        if let Some(i) = self.0.take() {
+            self.0 = i.next();
+            Some(i)
         } else {
             None
         }
