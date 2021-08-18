@@ -13,7 +13,7 @@ pub struct Player {
 
 // The player identifier
 pub enum PlayerIdMarker {}
-type PlayerId = Andex<PlayerIdMarker, 4>;
+type PlayerId = Andex<PlayerIdMarker, usize, 4>;
 
 // All players in the game
 type Players = AndexableArray<PlayerId, Player, { PlayerId::SIZE }>;
@@ -27,7 +27,7 @@ pub struct Piece {
 
 // The piece identifier
 pub enum PieceIdMarker {}
-type PieceId = Andex<PieceIdMarker, 32>;
+type PieceId = Andex<PieceIdMarker, usize, 32>;
 
 // All pieces in the game
 type Pieces = AndexableArray<PieceId, Piece, { PieceId::SIZE }>;
@@ -45,7 +45,7 @@ impl Game {
             self.players[playerid].score += 1;
         }
         // Move first piece forward:
-        self.pieces[PieceId::new::<0>()].position += 1;
+        self.pieces[PieceId::try_from(0).unwrap()].position += 1;
         // ^ note that we had to use a const generic parameter so that
         // the index bound is checked at compile time.
         // If we want to create an index at run time, we have to use

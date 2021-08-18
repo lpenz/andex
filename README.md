@@ -35,7 +35,7 @@ The recommended approach to use andex is as follows:
 - Create a type alias for the [`Andex`] type that's parameterized
   with that type:
   ```rust
-  type MyIdx = Andex<MyIdxMarker, 12>;
+  type MyIdx = Andex<MyIdxMarker, u8, 12>;
   ```
 - Create a type alias for the [`AndexableArray`] type that's
   indexed by the [`Andex`] alias created above:
@@ -51,19 +51,18 @@ array it indexes, and all instances are assumed to be within bounds.
 For this reason, it's useful to limit the way `Andex`'s are
 created. The ways we can get an instance is:
 
-- Via `new`, passing the value as a generic const argument:
-  ```rust
-  const first : MyIdx = MyIdx::new::<0>();
-  ```
-  This checks that the value is valid at compile time, as long as you
-  use it to create `const` variables.
-
 - Via `try_from`, which returns `Result<Andex, Error>` that has to be
   checked or explicitly ignored:
   ```rust
   if let Ok(first) = MyIdx::try_from(0) {
       // ...
   }
+  ```
+
+- Via `first` and `last`:
+  ```rust
+  let first = MyIdx::first();
+  let last = MyIdx::last();
   ```
 
 - By iterating:
@@ -110,6 +109,7 @@ even get the inner array by consuming the `AndexableArray`.
 
 ```rust
 use std::convert::TryFrom;
+use std::error::Error;
 use andex::*;
 
 // Create the andex type alias:
@@ -117,7 +117,7 @@ use andex::*;
 enum MyIdxMarker {};
 //   The andex type takes the marker (for uniqueness)
 //   and the size of the array as parameters:
-type MyIdx = Andex<MyIdxMarker, 12>;
+type MyIdx = Andex<MyIdxMarker, u32, 12>;
 
 // Create the array wrapper:
 type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
@@ -125,24 +125,19 @@ type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 // We can create other arrays indexable by the same Andex:
 type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let myu32 = MyU32::default();
 
     // We can now only index MyU32 using MyIdx
-    const first : MyIdx = MyIdx::new::<0>();
+    let first = MyIdx::first();
     println!("{:?}", myu32[first]);
-
-    // Trying to create a MyIdx with an out-of-bounds value
-    // doesn't work, this won't compile:
-    // const _overflow : MyIdx = MyIdx::new::<30>();
 
     // Trying to index myu32 with a "naked" number
     // doesn't work, this won't compile:
     // println!("{}", myu32[0]);
 
-    // We can only create indexes at compile-time or via try_from:
-    const second : MyIdx = MyIdx::new::<1>();
-    let third = MyIdx::try_from(2);
+    // We can create indexes via try_from with a valid value:
+    let second = MyIdx::try_from(2);
     // ^ Returns a Result, which Ok(MyIdx) if the value provided is
     // valid, or an error if it's not.
 
@@ -151,6 +146,57 @@ fn main() {
     for i in MyIdx::iter() {
         println!("{:?}", i);
     }
+    Ok(())
+}
+```
+
+## Compile-time guarantees
+
+This is the reason to use Andex instead of a plain array in the
+first play, right? Below is a list of some of the compile-time
+restrictions that we get.
+
+- We can't index [`AndexableArray`] with a `usize`.
+
+  The following code doesn't compile:
+
+```rust
+use andex::*;
+enum MyIdxMarker {};
+type MyIdx = Andex<MyIdxMarker, u8, 12>;
+type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+
+fn main() {
+    let myu32 = MyU32::default();
+
+    // Error: can't index myu32 with a usize
+    println!("{}", myu32[0]);
+}
+```
+
+- We can't index [`AndexableArray`] with a different Andex, even when
+  it has the same size. This is what using different markers gets
+  us.
+
+  The following code doesn't compile:
+
+```rust
+use andex::*;
+
+enum MyIdxMarker {};
+type MyIdx = Andex<MyIdxMarker, u8, 12>;
+type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+
+enum TheirIdxMarker {};
+type TheirIdx = Andex<TheirIdxMarker, u8, 12>;
+type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
+
+fn main() {
+    let myu32 = MyU32::default();
+    let theirIdx = TheirIdx::first();
+
+    // Error: can't index a MyU32 array with TheirIdx
+    println!("{}", myu32[theirIdx]);
 }
 ```
 

@@ -38,75 +38,44 @@ use std::str;
 /// use andex::*;
 ///
 /// enum MyIdxMarker {}
-/// type MyIdx = Andex<MyIdxMarker, 12>;
+/// type MyIdx = Andex<MyIdxMarker, u16, 12>;
 /// ```
-pub struct Andex<M, const SIZE: usize>(PhantomData<M>, usize);
+pub struct Andex<M, Inner: AndexInner, const SIZE: usize>(PhantomData<M>, Inner);
 
 /// Andex-wide methods
 ///
-/// [`Andex::new`] and [`Andex::iter`] are public, most other methods
-/// are only used in traits, and thus private.
-impl<M, const SIZE: usize> Andex<M, SIZE> {
+/// Some methods here are private and should only be invoked via traits.
+impl<M, Inner: AndexInner, const SIZE: usize> Andex<M, Inner, SIZE> {
     /// The `SIZE` parameter, which is the size of the array that this
     /// andex indexes.
     pub const SIZE: usize = SIZE;
 
-    /// The first possible value.
-    pub const FIRST: Andex<M, SIZE> = Andex(PhantomData, 0);
+    /// First possible value.
+    pub fn first() -> Self {
+        Andex(PhantomData, Inner::from_usize(0))
+    }
 
-    /// The last possible value.
-    pub const LAST: Andex<M, SIZE> = Andex(PhantomData, SIZE - 1);
-
-    /// Create a new andex instance
-    ///
-    /// We recomment using this method in `const` contexts, passing
-    /// the index as a const generic function parameter. That allows
-    /// the compiler to check the index against the array bounds at
-    /// compile time.
-    ///
-    /// For instance, the following compiles:
-    /// ```
-    /// use andex::*;
-    ///
-    /// struct MyIdxMarker;
-    /// type MyIdx = Andex<MyIdxMarker, 12>;
-    ///
-    /// const MYVALUE : MyIdx = MyIdx::new::<0>();
-    /// ```
-    ///
-    /// While the following doesn't:
-    /// ```compile_fail
-    /// use andex::*;
-    ///
-    /// struct MyIdxMarker;
-    /// type MyIdx = Andex<MyIdxMarker, 13>;
-    ///
-    /// const MYVALUE : MyIdx = MyIdx::new::<15>();
-    /// ```
-    #[inline]
-    pub const fn new<const N: usize>() -> Self {
-        // Trick for compile-time check of N:
-        const ASSERT: [(); 1] = [(); 1];
-        let _ = ASSERT[(N >= SIZE) as usize];
-        Andex(PhantomData, N)
+    /// Last possible value.
+    pub fn last() -> Self {
+        Andex(PhantomData, Inner::from_usize(SIZE - 1))
     }
 
     /// Returns the pair of the provided Andex.
     ///
     /// The "pair" is the element that is at the same distance from
     /// the center. This definition is useful in some contexts. For
-    /// instance, the pair of [`Self::FIRST`] is [`Self::LAST`].
+    /// instance, the pair of [`Self::first`] is [`Self::last`].
     #[inline]
-    pub const fn pair(self) -> Self {
-        Andex(PhantomData, SIZE - self.1 - 1)
+    pub fn pair(self) -> Self {
+        Andex(PhantomData, Inner::from_usize(SIZE - self.1.to_usize() - 1))
     }
 
     /// Return the next Andex in sequence, or None if it's the last one.
     #[inline]
     pub fn next(self) -> Option<Self> {
-        let i = usize::from(self);
+        let i = self.1.to_usize();
         if i < SIZE - 1 {
-            Some(Andex(PhantomData, i + 1))
+            Some(Andex(PhantomData, Inner::from_usize(i + 1)))
         } else {
             None
         }
@@ -117,7 +86,7 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     /// Used internally by the `Index` trait implementation.
     #[inline]
     fn index_arr<'a, T>(&self, arr: &'a [T]) -> &'a T {
-        unsafe { arr.get_unchecked(usize::from(self)) }
+        unsafe { arr.get_unchecked(self.1.to_usize()) }
     }
 
     /// Mut-indexes the provided array
@@ -125,7 +94,7 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     /// Used internally by the `IndexMut` trait implementation.
     #[inline]
     fn index_arr_mut<'a, T>(&self, arr: &'a mut [T]) -> &'a mut T {
-        unsafe { arr.get_unchecked_mut(usize::from(self)) }
+        unsafe { arr.get_unchecked_mut(self.1.to_usize()) }
     }
 
     /// Iterate all possible values of the index
@@ -141,14 +110,14 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     /// use andex::*;
     ///
     /// pub struct PlayerIdMarker;
-    /// type PlayerId = Andex<PlayerIdMarker, 12>;
+    /// type PlayerId = Andex<PlayerIdMarker, u8, 12>;
     ///
     /// for i in PlayerId::iter() {
     ///     println!("{}", i);
     /// }
     /// ```
-    pub fn iter() -> AndexIterator<M, SIZE> {
-        AndexIterator::<M, SIZE>::default()
+    pub fn iter() -> AndexIterator<M, Inner, SIZE> {
+        AndexIterator::<M, Inner, SIZE>::default()
     }
 }
 
@@ -157,82 +126,120 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
  * Marker.
  */
 
-impl<M, const SIZE: usize> Clone for Andex<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> Clone for Andex<M, Inner, SIZE> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<M, const SIZE: usize> Copy for Andex<M, SIZE> {}
+impl<M, Inner: AndexInner, const SIZE: usize> Copy for Andex<M, Inner, SIZE> {}
 
-impl<M, const SIZE: usize> Default for Andex<M, SIZE> {
+impl<M, Inner: AndexInner + Default, const SIZE: usize> Default for Andex<M, Inner, SIZE> {
     fn default() -> Self {
-        Andex(PhantomData, 0)
+        Andex(PhantomData, Inner::from_usize(0))
     }
 }
 
-impl<M, const SIZE: usize> PartialEq for Andex<M, SIZE> {
+impl<M, Inner: AndexInner + PartialEq, const SIZE: usize> PartialEq for Andex<M, Inner, SIZE> {
     fn eq(&self, other: &Self) -> bool {
         self.1 == other.1
     }
 }
 
-impl<M, const SIZE: usize> Eq for Andex<M, SIZE> {}
+impl<M, Inner: AndexInner + Eq, const SIZE: usize> Eq for Andex<M, Inner, SIZE> {}
 
-impl<M, const SIZE: usize> PartialOrd for Andex<M, SIZE> {
+impl<M, Inner: AndexInner + Ord, const SIZE: usize> PartialOrd for Andex<M, Inner, SIZE> {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<M, const SIZE: usize> Ord for Andex<M, SIZE> {
+impl<M, Inner: AndexInner + Ord, const SIZE: usize> Ord for Andex<M, Inner, SIZE> {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         self.1.cmp(&other.1)
     }
 }
 
-impl<M, const SIZE: usize> From<Andex<M, SIZE>> for usize {
-    fn from(andex: Andex<M, SIZE>) -> Self {
-        andex.1
+impl<M, Inner: AndexInner, const SIZE: usize> From<Andex<M, Inner, SIZE>> for usize {
+    fn from(andex: Andex<M, Inner, SIZE>) -> Self {
+        andex.1.to_usize()
     }
 }
 
-impl<M, const SIZE: usize> From<&Andex<M, SIZE>> for usize {
-    fn from(andex: &Andex<M, SIZE>) -> Self {
-        andex.1
+impl<M, Inner: AndexInner, const SIZE: usize> From<&Andex<M, Inner, SIZE>> for usize {
+    fn from(andex: &Andex<M, Inner, SIZE>) -> Self {
+        andex.1.to_usize()
     }
 }
 
-impl<M, const SIZE: usize> convert::TryFrom<usize> for Andex<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> convert::TryFrom<usize> for Andex<M, Inner, SIZE> {
     type Error = Error;
     fn try_from(value: usize) -> Result<Self, Self::Error> {
         if value < SIZE {
-            Ok(Andex(PhantomData, value))
+            Ok(Andex(PhantomData, Inner::from_usize(value)))
         } else {
             Err(Error::OutOfBounds { value, size: SIZE })
         }
     }
 }
 
-impl<M, const SIZE: usize> fmt::Debug for Andex<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> fmt::Debug for Andex<M, Inner, SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", usize::from(self))
+        write!(f, "Andex<_, _, {}>(_, {:?})", SIZE, self.1.to_usize())
     }
 }
 
-impl<M, const SIZE: usize> fmt::Display for Andex<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> fmt::Display for Andex<M, Inner, SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", usize::from(self))
+        write!(f, "{}", self.1.to_usize())
     }
 }
 
-impl<M, const SIZE: usize> str::FromStr for Andex<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> str::FromStr for Andex<M, Inner, SIZE> {
     type Err = Error;
-
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::try_from(usize::from_str(s)?)
     }
 }
+
+/* AndexInner */
+
+/// Trait that identifies types that can be used as inner types of
+/// Andex.
+///
+/// We only need to convert them to and from usize for some internal
+/// functionality. The bounds are guaranteed to be respected because
+/// we check SIZE against both Inner and usize.
+///
+/// We implement them automatically for all builtin unsigned numeric
+/// types.
+pub trait AndexInner: Copy + Default {
+    /// Convert Inner to usize
+    fn to_usize(self) -> usize;
+    /// Convert usize to Inner
+    fn from_usize(u: usize) -> Self;
+}
+
+// Needs https://github.com/rust-lang/rust/issues/67792 for const support
+macro_rules! impl_andexinner {
+    ($type:ty) => {
+        impl AndexInner for $type {
+            fn to_usize(self) -> usize {
+                self as usize
+            }
+            fn from_usize(u: usize) -> Self {
+                u as Self
+            }
+        }
+    };
+}
+
+impl_andexinner!(usize);
+impl_andexinner!(u8);
+impl_andexinner!(u16);
+impl_andexinner!(u32);
+impl_andexinner!(u64);
+impl_andexinner!(u128);
 
 /* Iterator */
 
@@ -247,28 +254,28 @@ impl<M, const SIZE: usize> str::FromStr for Andex<M, SIZE> {
 /// use andex::*;
 ///
 /// pub struct PlayerIdMarker;
-/// type PlayerId = Andex<PlayerIdMarker, 12>;
+/// type PlayerId = Andex<PlayerIdMarker, u8, 12>;
 ///
 /// for i in PlayerId::iter() {
 ///     println!("{}", i);
 /// }
 /// ```
-pub struct AndexIterator<M, const SIZE: usize>(Option<Andex<M, SIZE>>);
+pub struct AndexIterator<M, Inner: AndexInner, const SIZE: usize>(Option<Andex<M, Inner, SIZE>>);
 
-impl<M, const SIZE: usize> fmt::Debug for AndexIterator<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> fmt::Debug for AndexIterator<M, Inner, SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "AndexIterator({:?})", self.0)
     }
 }
 
-impl<M, const SIZE: usize> Default for AndexIterator<M, SIZE> {
+impl<M, Inner: AndexInner, const SIZE: usize> Default for AndexIterator<M, Inner, SIZE> {
     fn default() -> Self {
-        AndexIterator(Some(Andex::<M, SIZE>::default()))
+        AndexIterator(Some(Andex::<M, Inner, SIZE>::default()))
     }
 }
 
-impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
-    type Item = Andex<M, SIZE>;
+impl<M, Inner: AndexInner, const SIZE: usize> Iterator for AndexIterator<M, Inner, SIZE> {
+    type Item = Andex<M, Inner, SIZE>;
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(i) = self.0.take() {
             self.0 = i.next();
@@ -289,7 +296,7 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 /// use andex::*;
 ///
 /// enum MyIdxMarker {};
-/// type MyIdx = Andex<MyIdxMarker, 12>;
+/// type MyIdx = Andex<MyIdxMarker, u8, 12>;
 ///
 /// // Create the array wrapper:
 /// type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
@@ -301,7 +308,7 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 ///     // Create a default array:
 ///     let myu32 = MyU32::default();
 ///     // Print the first element:
-///     const first : MyIdx = MyIdx::new::<0>();
+///     let first : MyIdx = MyIdx::first();
 ///     println!("{:?}", myu32[first]);
 ///     // Iterate and print all elements:
 ///     for i in MyIdx::iter() {
@@ -322,42 +329,42 @@ impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
 
 impl<A, Item: Copy, const SIZE: usize> Copy for AndexableArray<A, Item, SIZE> {}
 
-impl<A, Item: Default + Copy, const SIZE: usize> Default for AndexableArray<A, Item, SIZE> {
+impl<A, Item: Copy + Default, const SIZE: usize> Default for AndexableArray<A, Item, SIZE> {
     fn default() -> Self {
         AndexableArray(Default::default(), [Default::default(); SIZE])
     }
 }
 
-impl<A, Item, const SIZE: usize> ops::Index<Andex<A, SIZE>>
-    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+impl<A, Inner: AndexInner, Item, const SIZE: usize> ops::Index<Andex<A, Inner, SIZE>>
+    for AndexableArray<Andex<A, Inner, SIZE>, Item, SIZE>
 {
     type Output = Item;
-    fn index(&self, index: Andex<A, SIZE>) -> &Self::Output {
+    fn index(&self, index: Andex<A, Inner, SIZE>) -> &Self::Output {
         index.index_arr(&self.1)
     }
 }
 
-impl<A, Item, const SIZE: usize> ops::IndexMut<Andex<A, SIZE>>
-    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+impl<A, Inner: AndexInner, Item, const SIZE: usize> ops::IndexMut<Andex<A, Inner, SIZE>>
+    for AndexableArray<Andex<A, Inner, SIZE>, Item, SIZE>
 {
-    fn index_mut(&mut self, index: Andex<A, SIZE>) -> &mut Item {
+    fn index_mut(&mut self, index: Andex<A, Inner, SIZE>) -> &mut Item {
         index.index_arr_mut(&mut self.1)
     }
 }
 
-impl<A, Item, const SIZE: usize> ops::Index<&Andex<A, SIZE>>
-    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+impl<A, Inner: AndexInner, Item, const SIZE: usize> ops::Index<&Andex<A, Inner, SIZE>>
+    for AndexableArray<Andex<A, Inner, SIZE>, Item, SIZE>
 {
     type Output = Item;
-    fn index(&self, index: &Andex<A, SIZE>) -> &Self::Output {
+    fn index(&self, index: &Andex<A, Inner, SIZE>) -> &Self::Output {
         index.index_arr(&self.1)
     }
 }
 
-impl<A, Item, const SIZE: usize> ops::IndexMut<&Andex<A, SIZE>>
-    for AndexableArray<Andex<A, SIZE>, Item, SIZE>
+impl<A, Inner: AndexInner, Item, const SIZE: usize> ops::IndexMut<&Andex<A, Inner, SIZE>>
+    for AndexableArray<Andex<A, Inner, SIZE>, Item, SIZE>
 {
-    fn index_mut(&mut self, index: &Andex<A, SIZE>) -> &mut Item {
+    fn index_mut(&mut self, index: &Andex<A, Inner, SIZE>) -> &mut Item {
         index.index_arr_mut(&mut self.1)
     }
 }
@@ -494,7 +501,7 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 /// use andex::*;
 ///
 /// enum MyIdxMarker {};
-/// type MyIdx = Andex<MyIdxMarker, 12>;
+/// type MyIdx = Andex<MyIdxMarker, u8, 12>;
 ///
 /// fn main() {
 ///     println!("{:?}", MyIdx::try_from(15_usize));

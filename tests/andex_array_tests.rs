@@ -11,7 +11,7 @@ use anyhow::Result;
 /* Tests for arrays: */
 
 pub struct MyIdxInner;
-type MyIdx = Andex<MyIdxInner, 12>;
+type MyIdx = Andex<MyIdxInner, u8, 12>;
 
 type MyArray = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
@@ -21,7 +21,6 @@ type _MyArrayNoTraits = AndexableArray<MyIdx, NoTraits, { MyIdx::SIZE }>;
 #[test]
 fn test_myarr() -> Result<()> {
     let mut m = MyArray::default();
-    m[MyIdx::new::<2>()] = 5;
     m[MyIdx::try_from(2)?] = 5;
     for (num, i) in MyIdx::iter().enumerate() {
         m[i] = num as u32 + 20;

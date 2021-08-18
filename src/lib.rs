@@ -37,14 +37,14 @@
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   type MyIdx = Andex<MyIdxMarker, 12>;
+//!   type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   ```
 //! - Create a type alias for the [`AndexableArray`] type that's
 //!   indexed by the [`Andex`] alias created above:
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   ```
 //!
@@ -56,33 +56,33 @@
 //! For this reason, it's useful to limit the way `Andex`'s are
 //! created. The ways we can get an instance is:
 //!
-//! - Via `new`, passing the value as a generic const argument:
-//!   ```rust
-//!   # use andex::*;
-//!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
-//!   const first : MyIdx = MyIdx::new::<0>();
-//!   ```
-//!   This checks that the value is valid at compile time, as long as you
-//!   use it to create `const` variables.
-//!
 //! - Via `try_from`, which returns `Result<Andex, Error>` that has to be
 //!   checked or explicitly ignored:
 //!   ```rust
 //!   # use std::convert::TryFrom;
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   if let Ok(first) = MyIdx::try_from(0) {
 //!       // ...
 //!   }
+//!   ```
+//!
+//! - Via `first` and `last`:
+//!   ```rust
+//!   # use std::convert::TryFrom;
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
+//!   let first = MyIdx::first();
+//!   let last = MyIdx::last();
 //!   ```
 //!
 //! - By iterating:
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   for idx in MyIdx::iter() {
 //!       // ...
 //!   }
@@ -101,7 +101,7 @@
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
 //!   let myu32 = MyU32::default();
@@ -110,7 +110,7 @@
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   let myu32 = MyU32::from([8; MyIdx::SIZE]);
 //!   ```
@@ -118,7 +118,7 @@
 //!   ```rust
 //!   # use andex::*;
 //!   # enum MyIdxMarker {};
-//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   # type MyIdx = Andex<MyIdxMarker, u64, 12>;
 //!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   let myu32 = (0..12).collect::<MyU32>();
 //!   ```
@@ -136,6 +136,7 @@
 //!
 //! ```rust
 //! use std::convert::TryFrom;
+//! use std::error::Error;
 //! use andex::*;
 //!
 //! // Create the andex type alias:
@@ -143,7 +144,7 @@
 //! enum MyIdxMarker {};
 //! //   The andex type takes the marker (for uniqueness)
 //! //   and the size of the array as parameters:
-//! type MyIdx = Andex<MyIdxMarker, 12>;
+//! type MyIdx = Andex<MyIdxMarker, u32, 12>;
 //!
 //! // Create the array wrapper:
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
@@ -151,24 +152,19 @@
 //! // We can create other arrays indexable by the same Andex:
 //! type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 //!
-//! fn main() {
+//! fn main() -> Result<(), Box<dyn Error>> {
 //!     let myu32 = MyU32::default();
 //!
 //!     // We can now only index MyU32 using MyIdx
-//!     const first : MyIdx = MyIdx::new::<0>();
+//!     let first = MyIdx::first();
 //!     println!("{:?}", myu32[first]);
-//!
-//!     // Trying to create a MyIdx with an out-of-bounds value
-//!     // doesn't work, this won't compile:
-//!     // const _overflow : MyIdx = MyIdx::new::<30>();
 //!
 //!     // Trying to index myu32 with a "naked" number
 //!     // doesn't work, this won't compile:
 //!     // println!("{}", myu32[0]);
 //!
-//!     // We can only create indexes at compile-time or via try_from:
-//!     const second : MyIdx = MyIdx::new::<1>();
-//!     let third = MyIdx::try_from(2);
+//!     // We can create indexes via try_from with a valid value:
+//!     let second = MyIdx::try_from(2);
 //!     // ^ Returns a Result, which Ok(MyIdx) if the value provided is
 //!     // valid, or an error if it's not.
 //!
@@ -177,6 +173,7 @@
 //!     for i in MyIdx::iter() {
 //!         println!("{:?}", i);
 //!     }
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -193,27 +190,14 @@
 //! ```compile_fail
 //! use andex::*;
 //! enum MyIdxMarker {};
-//! type MyIdx = Andex<MyIdxMarker, 12>;
+//! type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
 //! fn main() {
 //!     let myu32 = MyU32::default();
 //!
+//!     // Error: can't index myu32 with a usize
 //!     println!("{}", myu32[0]);
-//! }
-//! ```
-//!
-//! - We can't create an [`Andex`] with a value out-of-bounds (mostly)
-//!
-//!   The following code doesn't compile:
-//!
-//! ```compile_fail
-//! use andex::*;
-//! enum MyIdxMarker {};
-//! type MyIdx = Andex<MyIdxMarker, 12>;
-//!
-//! fn main() {
-//!     const myidx : MyIdx = MyIdx::new::<13>();
 //! }
 //! ```
 //!
@@ -227,18 +211,18 @@
 //! use andex::*;
 //!
 //! enum MyIdxMarker {};
-//! type MyIdx = Andex<MyIdxMarker, 12>;
+//! type MyIdx = Andex<MyIdxMarker, u8, 12>;
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
 //! enum TheirIdxMarker {};
-//! type TheirIdx = Andex<TheirIdxMarker, 12>;
+//! type TheirIdx = Andex<TheirIdxMarker, u8, 12>;
 //! type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
 //!
 //! fn main() {
 //!     let myu32 = MyU32::default();
-//!     let theirIdx = TheirIdx::new::<0>();
+//!     let theirIdx = TheirIdx::first();
 //!
-//!     // We can't index a MyU32 array with TheirIdx:
+//!     // Error: can't index a MyU32 array with TheirIdx
 //!     println!("{}", myu32[theirIdx]);
 //! }
 //! ```
