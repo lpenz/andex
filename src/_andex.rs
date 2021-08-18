@@ -50,23 +50,63 @@ impl<M, Inner: AndexInner, const SIZE: usize> Andex<M, Inner, SIZE> {
     /// andex indexes.
     pub const SIZE: usize = SIZE;
 
+    /// The first possible value.
+    pub const FIRST: Andex<M, Inner, SIZE> = Andex(PhantomData, Inner::from_usize(0));
+
+    /// The last possible value.
+    pub const LAST: Andex<M, Inner, SIZE> = Andex(PhantomData, Inner::from_usize(SIZE - 1));
+
     /// First possible value.
-    pub fn first() -> Self {
-        Andex(PhantomData, Inner::from_usize(0))
+    pub const fn first() -> Self {
+        Self::FIRST
     }
 
     /// Last possible value.
-    pub fn last() -> Self {
-        Andex(PhantomData, Inner::from_usize(SIZE - 1))
+    pub const fn last() -> Self {
+        Self::LAST
+    }
+
+    /// Create a new andex instance
+    ///
+    /// We recomment using this method in `const` contexts, passing
+    /// the index as a const generic function parameter. That allows
+    /// the compiler to check the index against the array bounds at
+    /// compile time.
+    ///
+    /// For instance, the following compiles:
+    /// ```
+    /// use andex::*;
+    ///
+    /// struct MyIdxMarker;
+    /// type MyIdx = Andex<MyIdxMarker, usize, 12>;
+    ///
+    /// const MYVALUE : MyIdx = MyIdx::new::<0>();
+    /// ```
+    ///
+    /// While the following doesn't:
+    /// ```compile_fail
+    /// use andex::*;
+    ///
+    /// struct MyIdxMarker;
+    /// type MyIdx = Andex<MyIdxMarker, 13>;
+    ///
+    /// const MYVALUE : MyIdx = MyIdx::new::<15>();
+    /// ```
+    #[inline]
+    pub const fn new<const N: usize>() -> Self {
+        // Trick for compile-time check of N:
+        const ASSERT: [(); 1] = [(); 1];
+        let _ = ASSERT[(N >= SIZE) as usize];
+        Andex(PhantomData, Inner::from_usize(N))
     }
 
     /// Returns the pair of the provided Andex.
     ///
     /// The "pair" is the element that is at the same distance from
     /// the center. This definition is useful in some contexts. For
-    /// instance, the pair of [`Self::first`] is [`Self::last`].
+    /// instance, the pair of [`Self::FIRST`] is [`Self::LAST`].
     #[inline]
-    pub fn pair(self) -> Self {
+    pub const fn pair(self) -> Self {
         Andex(PhantomData, Inner::from_usize(SIZE - self.1.to_usize() - 1))
     }
 
@@ -223,7 +263,7 @@ pub trait AndexInner: Copy + Default {
 // Needs https://github.com/rust-lang/rust/issues/67792 for const support
 macro_rules! impl_andexinner {
     ($type:ty) => {
-        impl AndexInner for $type {
+        impl const AndexInner for $type {
             fn to_usize(self) -> usize {
                 self as usize
             }
@@ -308,7 +348,7 @@ impl<M, Inner: AndexInner, const SIZE: usize> Iterator for AndexIterator<M, Inne
 ///     // Create a default array:
 ///     let myu32 = MyU32::default();
 ///     // Print the first element:
-///     let first : MyIdx = MyIdx::first();
+///     const first : MyIdx = MyIdx::new::<0>();
 ///     println!("{:?}", myu32[first]);
 ///     // Iterate and print all elements:
 ///     for i in MyIdx::iter() {

@@ -4,6 +4,8 @@
 
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
+#![feature(const_trait_impl)]
+#![feature(const_fn_trait_bound)]
 
 //! *andex* (Array iNDEX) is a single-file, zero-dependency rust
 //! crate that helps us create a strongly-typed, zero-cost, numerically
@@ -55,6 +57,16 @@
 //!
 //! For this reason, it's useful to limit the way `Andex`'s are
 //! created. The ways we can get an instance is:
+//!
+//! - Via `new`, passing the value as a generic const argument:
+//!   ```rust
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, u8, 12>;
+//!   const first : MyIdx = MyIdx::new::<0>();
+//!   ```
+//!   This checks that the value is valid at compile time, as long as you
+//!   use it to create `const` variables.
 //!
 //! - Via `try_from`, which returns `Result<Andex, Error>` that has to be
 //!   checked or explicitly ignored:
@@ -156,8 +168,12 @@
 //!     let myu32 = MyU32::default();
 //!
 //!     // We can now only index MyU32 using MyIdx
-//!     let first = MyIdx::first();
+//!     const first : MyIdx = MyIdx::new::<0>();
 //!     println!("{:?}", myu32[first]);
+//!
+//!     // Trying to create a MyIdx with an out-of-bounds value
+//!     // doesn't work, this won't compile:
+//!     // const _overflow : MyIdx = MyIdx::new::<30>();
 //!
 //!     // Trying to index myu32 with a "naked" number
 //!     // doesn't work, this won't compile:
@@ -167,6 +183,9 @@
 //!     let second = MyIdx::try_from(2);
 //!     // ^ Returns a Result, which Ok(MyIdx) if the value provided is
 //!     // valid, or an error if it's not.
+//!
+//!     // We can also create indexes at compile-time:
+//!     const third : MyIdx = MyIdx::new::<1>();
 //!
 //!     // The index type has an `iter()` method that produces
 //!     // all possible values in order:
@@ -201,6 +220,21 @@
 //! }
 //! ```
 //!
+//! - We can't create a const [`Andex`] with an out-of-bounds value.
+//!
+//!   The following code doesn't compile:
+//!
+//! ```compile_fail
+//! use andex::*;
+//! enum MyIdxMarker {};
+//! type MyIdx = Andex<MyIdxMarker, 12>;
+//!
+//! fn main() {
+//!     // Error: can't create out-of-bounds const:
+//!     const myidx : MyIdx = MyIdx::new::<13>();
+//! }
+//! ```
+//!
 //! - We can't index [`AndexableArray`] with a different Andex, even when
 //!   it has the same size. This is what using different markers gets
 //!   us.
@@ -220,7 +254,7 @@
 //!
 //! fn main() {
 //!     let myu32 = MyU32::default();
-//!     let theirIdx = TheirIdx::first();
+//!     let theirIdx = TheirIdx::FIRST;
 //!
 //!     // Error: can't index a MyU32 array with TheirIdx
 //!     println!("{}", myu32[theirIdx]);

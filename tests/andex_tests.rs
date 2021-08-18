@@ -22,6 +22,8 @@ fn test_basic() -> Result<()> {
     assert_eq!(is, vec![0, 1, 2]);
     let i = C::default();
     assert_eq!(usize::from(i), 0_usize);
+    const J: C = C::new::<2>();
+    assert_eq!(usize::from(J), 2_usize);
     let k: C = C::try_from(1).unwrap();
     assert_eq!(usize::from(k), 1_usize);
     assert_eq!(usize::from(C::try_from(2)?), 2);
@@ -30,6 +32,21 @@ fn test_basic() -> Result<()> {
     assert_eq!(u, k);
     Ok(())
 }
+
+#[test]
+#[should_panic]
+fn test_oob1() {
+    let u: C = C::new::<5>();
+    assert_eq!(usize::from(u), 5_usize);
+}
+
+// // This doesn't compile, which is correct:
+// #[test]
+// #[should_panic]
+// fn test_oob2() {
+//     const u: C = C::new::<5>();
+//     assert_eq!(usize::from(u), 5_usize);
+// }
 
 #[test]
 fn test_try_from() {
@@ -62,6 +79,8 @@ fn test_parse() {
 fn test_pair() {
     let f: C = C::first();
     assert_eq!(f.pair(), C::last());
+    let f: C = C::LAST;
+    assert_eq!(f.pair(), C::FIRST);
 }
 
 /* Iterator */

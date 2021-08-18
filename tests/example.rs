@@ -45,7 +45,7 @@ impl Game {
             self.players[playerid].score += 1;
         }
         // Move first piece forward:
-        self.pieces[PieceId::try_from(0).unwrap()].position += 1;
+        self.pieces[PieceId::new::<0>()].position += 1;
         // ^ note that we had to use a const generic parameter so that
         // the index bound is checked at compile time.
         // If we want to create an index at run time, we have to use
