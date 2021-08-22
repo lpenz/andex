@@ -5,7 +5,7 @@
 #![warn(missing_debug_implementations)]
 #![warn(missing_docs)]
 
-//! Main andex module
+//! andex module
 //!
 //! andex code is structure in a way that allows users to copy this
 //! file to their projects and use andex as its own module, without a

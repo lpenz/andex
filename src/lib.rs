@@ -78,6 +78,16 @@
 //!   }
 //!   ```
 //!
+//! - Via `FIRST` and `LAST`:
+//!   ```rust
+//!   # use std::convert::TryFrom;
+//!   # use andex::*;
+//!   # enum MyIdxMarker {};
+//!   # type MyIdx = Andex<MyIdxMarker, 12>;
+//!   const first : MyIdx = MyIdx::FIRST;
+//!   let last = MyIdx::LAST;
+//!   ```
+//!
 //! - By iterating:
 //!   ```rust
 //!   # use andex::*;
@@ -136,6 +146,7 @@
 //!
 //! ```rust
 //! use std::convert::TryFrom;
+//! use std::error::Error;
 //! use andex::*;
 //!
 //! // Create the andex type alias:
@@ -151,7 +162,7 @@
 //! // We can create other arrays indexable by the same Andex:
 //! type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 //!
-//! fn main() {
+//! fn main() -> Result<(), Box<dyn Error>> {
 //!     let myu32 = MyU32::default();
 //!
 //!     // We can now only index MyU32 using MyIdx
@@ -166,17 +177,20 @@
 //!     // doesn't work, this won't compile:
 //!     // println!("{}", myu32[0]);
 //!
-//!     // We can only create indexes at compile-time or via try_from:
-//!     const second : MyIdx = MyIdx::new::<1>();
-//!     let third = MyIdx::try_from(2);
+//!     // We can create indexes via try_from with a valid value:
+//!     let second = MyIdx::try_from(2);
 //!     // ^ Returns a Result, which Ok(MyIdx) if the value provided is
 //!     // valid, or an error if it's not.
+//!
+//!     // We can also create indexes at compile-time:
+//!     const third : MyIdx = MyIdx::new::<1>();
 //!
 //!     // The index type has an `iter()` method that produces
 //!     // all possible values in order:
 //!     for i in MyIdx::iter() {
 //!         println!("{:?}", i);
 //!     }
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -199,11 +213,12 @@
 //! fn main() {
 //!     let myu32 = MyU32::default();
 //!
+//!     // Error: can't index myu32 with a usize
 //!     println!("{}", myu32[0]);
 //! }
 //! ```
 //!
-//! - We can't create an [`Andex`] with a value out-of-bounds (mostly)
+//! - We can't create a const [`Andex`] with an out-of-bounds value.
 //!
 //!   The following code doesn't compile:
 //!
@@ -213,6 +228,7 @@
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //!
 //! fn main() {
+//!     // Error: can't create out-of-bounds const:
 //!     const myidx : MyIdx = MyIdx::new::<13>();
 //! }
 //! ```
@@ -236,9 +252,9 @@
 //!
 //! fn main() {
 //!     let myu32 = MyU32::default();
-//!     let theirIdx = TheirIdx::new::<0>();
+//!     let theirIdx = TheirIdx::FIRST;
 //!
-//!     // We can't index a MyU32 array with TheirIdx:
+//!     // Error: can't index a MyU32 array with TheirIdx
 //!     println!("{}", myu32[theirIdx]);
 //! }
 //! ```

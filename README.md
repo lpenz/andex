@@ -66,6 +66,12 @@ created. The ways we can get an instance is:
   }
   ```
 
+- Via `FIRST` and `LAST`:
+  ```rust
+  const first = MyIdx::FIRST;
+  let last = MyIdx::LAST;
+  ```
+
 - By iterating:
   ```rust
   for idx in MyIdx::iter() {
@@ -110,6 +116,7 @@ even get the inner array by consuming the `AndexableArray`.
 
 ```rust
 use std::convert::TryFrom;
+use std::error::Error;
 use andex::*;
 
 // Create the andex type alias:
@@ -125,7 +132,7 @@ type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 // We can create other arrays indexable by the same Andex:
 type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let myu32 = MyU32::default();
 
     // We can now only index MyU32 using MyIdx
@@ -140,17 +147,85 @@ fn main() {
     // doesn't work, this won't compile:
     // println!("{}", myu32[0]);
 
-    // We can only create indexes at compile-time or via try_from:
-    const second : MyIdx = MyIdx::new::<1>();
-    let third = MyIdx::try_from(2);
+    // We can create indexes via try_from with a valid value:
+    let second = MyIdx::try_from(2);
     // ^ Returns a Result, which Ok(MyIdx) if the value provided is
     // valid, or an error if it's not.
+
+    // We can also create indexes at compile-time:
+    const third : MyIdx = MyIdx::new::<1>();
 
     // The index type has an `iter()` method that produces
     // all possible values in order:
     for i in MyIdx::iter() {
         println!("{:?}", i);
     }
+    Ok(())
+}
+```
+
+## Compile-time guarantees
+
+This is the reason to use Andex instead of a plain array in the
+first play, right? Below is a list of some of the compile-time
+restrictions that we get.
+
+- We can't index [`AndexableArray`] with a `usize`.
+
+  The following code doesn't compile:
+
+```rust
+use andex::*;
+enum MyIdxMarker {};
+type MyIdx = Andex<MyIdxMarker, 12>;
+type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+
+fn main() {
+    let myu32 = MyU32::default();
+
+    // Error: can't index myu32 with a usize
+    println!("{}", myu32[0]);
+}
+```
+
+- We can't create a const [`Andex`] with an out-of-bounds value.
+
+  The following code doesn't compile:
+
+```rust
+use andex::*;
+enum MyIdxMarker {};
+type MyIdx = Andex<MyIdxMarker, 12>;
+
+fn main() {
+    // Error: can't create out-of-bounds const:
+    const myidx : MyIdx = MyIdx::new::<13>();
+}
+```
+
+- We can't index [`AndexableArray`] with a different Andex, even when
+  it has the same size. This is what using different markers gets
+  us.
+
+  The following code doesn't compile:
+
+```rust
+use andex::*;
+
+enum MyIdxMarker {};
+type MyIdx = Andex<MyIdxMarker, 12>;
+type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+
+enum TheirIdxMarker {};
+type TheirIdx = Andex<TheirIdxMarker, 12>;
+type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
+
+fn main() {
+    let myu32 = MyU32::default();
+    let theirIdx = TheirIdx::FIRST;
+
+    // Error: can't index a MyU32 array with TheirIdx
+    println!("{}", myu32[theirIdx]);
 }
 ```
 
