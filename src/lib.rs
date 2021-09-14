@@ -259,5 +259,5 @@
 //! }
 //! ```
 
-pub mod _andex;
-pub use self::_andex::*;
+mod andex;
+pub use self::andex::*;
