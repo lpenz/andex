@@ -41,6 +41,8 @@ The recommended approach to use andex is as follows:
   indexed by the [`Andex`] alias created above:
   ```rust
   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
+  // There is also a helper macro for this one:
+  type MyOtherU32 = andex::array!(MyIdx, u32);
   ```
 
 ### Creating andex instances
@@ -68,7 +70,7 @@ created. The ways we can get an instance is:
 
 - Via `FIRST` and `LAST`:
   ```rust
-  const first = MyIdx::FIRST;
+  const first : MyIdx = MyIdx::FIRST;
   let last = MyIdx::LAST;
   ```
 
@@ -93,6 +95,9 @@ in several more ways:
   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
   let myu32 = MyU32::default();
+
+  // We also have a helper macro that avoids repeating the size:
+  type MyOtherU32 = andex::array!(MyIdx, u32);
   ```
 - Using `From` with an appropriate array:
   ```rust

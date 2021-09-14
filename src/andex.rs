@@ -314,6 +314,28 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 #[derive(Debug)]
 pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZE]);
 
+/// Helper macro that creates an AndexableArray from an Andex
+///
+/// This macro just uses the Andex argument to figure out the array
+/// size, so that we don't have to repeat it here.
+///
+/// Example:
+/// ```
+/// use andex::*;
+///
+/// enum MyIdxMarker {};
+/// type MyIdx = Andex<MyIdxMarker, 12>;
+///
+/// // Create the array wrapper with the macro:
+/// type MyU32 = andex::array!(MyIdx, u32);
+/// ```
+#[macro_export]
+macro_rules! array {
+    ($andex: ty, $item: ty) => {
+        $crate::AndexableArray<$andex, $item, { <$andex>::SIZE }>
+    };
+}
+
 impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
     fn clone(&self) -> Self {
         AndexableArray::<A, Item, SIZE>::from(self.1)

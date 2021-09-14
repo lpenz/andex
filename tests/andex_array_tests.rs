@@ -15,6 +15,8 @@ type MyIdx = Andex<MyIdxInner, 12>;
 
 type MyArray = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
+type MyArray2 = andex::array!(MyIdx, u32);
+
 pub struct NoTraits {}
 type _MyArrayNoTraits = AndexableArray<MyIdx, NoTraits, { MyIdx::SIZE }>;
 
@@ -70,7 +72,7 @@ fn test_conversions() -> Result<()> {
 
 #[test]
 fn test_iter() -> Result<()> {
-    let mut myarray = MyArray::from([3; 12]);
+    let mut myarray = MyArray2::from([3; 12]);
     for item in &mut myarray {
         *item = 5;
     }
