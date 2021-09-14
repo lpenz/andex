@@ -5,11 +5,11 @@
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
 
-//! *andex* (Array iNDEX) is a single-file, zero-dependency rust
-//! crate that helps us create a strongly-typed, zero-cost, numerically
-//! bound array index and the corresponding array type with the provided
-//! size. The index is safe in the sense that an out-of-bounds value can't
-//! be created, and the array type can't be indexed by any other types.
+//! *andex* (Array iNDEX) is a zero-dependency rust crate that helps
+//! us create strongly-typed, zero-cost, numerically bound array index
+//! and the corresponding array type with the provided size. The index
+//! is safe in the sense that an out-of-bounds value can't be created,
+//! and the array type can't be indexed by any other types.
 //!
 //! This is useful in scenarios where we have different arrays inside a
 //! `struct` and we want reference members without holding proper
