@@ -6,11 +6,11 @@
 
 # andex
 
-*andex* (Array iNDEX) is a single-file, zero-dependency rust
-crate that helps us create a strongly-typed, zero-cost, numerically
-bound array index and the corresponding array type with the provided
-size. The index is safe in the sense that an out-of-bounds value can't
-be created, and the array type can't be indexed by any other types.
+*andex* (Array iNDEX) is a zero-dependency rust crate that helps
+us create strongly-typed, zero-cost, numerically bound array index
+and the corresponding array type with the provided size. The index
+is safe in the sense that an out-of-bounds value can't be created,
+and the array type can't be indexed by any other types.
 
 This is useful in scenarios where we have different arrays inside a
 `struct` and we want reference members without holding proper
@@ -30,7 +30,7 @@ the array wrapper.
 The recommended approach to use andex is as follows:
 - Create a unique empty type
   ```rust
-  enum MyIdxMarker {};
+  enum MyIdxMarker {}
   ```
 - Create a type alias for the [`Andex`] type that's parameterized
   with that type:
@@ -126,7 +126,7 @@ use andex::*;
 
 // Create the andex type alias:
 //   First, we need an empty type that we use as a marker:
-enum MyIdxMarker {};
+enum MyIdxMarker {}
 //   The andex type takes the marker (for uniqueness)
 //   and the size of the array as parameters:
 type MyIdx = Andex<MyIdxMarker, 12>;
@@ -181,7 +181,7 @@ restrictions that we get.
 
 ```rust
 use andex::*;
-enum MyIdxMarker {};
+enum MyIdxMarker {}
 type MyIdx = Andex<MyIdxMarker, 12>;
 type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
@@ -199,7 +199,7 @@ fn main() {
 
 ```rust
 use andex::*;
-enum MyIdxMarker {};
+enum MyIdxMarker {}
 type MyIdx = Andex<MyIdxMarker, 12>;
 
 fn main() {
@@ -217,11 +217,11 @@ fn main() {
 ```rust
 use andex::*;
 
-enum MyIdxMarker {};
+enum MyIdxMarker {}
 type MyIdx = Andex<MyIdxMarker, 12>;
 type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
-enum TheirIdxMarker {};
+enum TheirIdxMarker {}
 type TheirIdx = Andex<TheirIdxMarker, 12>;
 type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
 

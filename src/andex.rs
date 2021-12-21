@@ -288,7 +288,7 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 /// ```
 /// use andex::*;
 ///
-/// enum MyIdxMarker {};
+/// enum MyIdxMarker {}
 /// type MyIdx = Andex<MyIdxMarker, 12>;
 ///
 /// // Create the array wrapper:
@@ -297,19 +297,17 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 /// // We can create other arrays with the same Andex type:
 /// type MyF64 = AndexableArray<MyIdx, f64, { MyIdx::SIZE }>;
 ///
-/// fn main() {
-///     // Create a default array:
-///     let myu32 = MyU32::default();
-///     // Print the first element:
-///     const first : MyIdx = MyIdx::new::<0>();
-///     println!("{:?}", myu32[first]);
-///     // Iterate and print all elements:
-///     for i in MyIdx::iter() {
-///         println!("{:?}", myu32[i]);
-///     }
-///     // Print the whole array
-///     println!("{:?}", myu32);
+/// // Create a default array:
+/// let myu32 = MyU32::default();
+/// // Print the first element:
+/// const first : MyIdx = MyIdx::new::<0>();
+/// println!("{:?}", myu32[first]);
+/// // Iterate and print all elements:
+/// for i in MyIdx::iter() {
+///     println!("{:?}", myu32[i]);
 /// }
+/// // Print the whole array
+/// println!("{:?}", myu32);
 /// ```
 #[derive(Debug)]
 pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZE]);
@@ -515,12 +513,10 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 /// use std::convert::TryFrom;
 /// use andex::*;
 ///
-/// enum MyIdxMarker {};
+/// enum MyIdxMarker {}
 /// type MyIdx = Andex<MyIdxMarker, 12>;
 ///
-/// fn main() {
-///     println!("{:?}", MyIdx::try_from(15_usize));
-/// }
+/// println!("{:?}", MyIdx::try_from(15_usize));
 /// ```
 #[derive(Debug, Clone)]
 pub enum Error {

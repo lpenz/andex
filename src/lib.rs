@@ -30,20 +30,20 @@
 //! - Create a unique empty type
 //!   ```rust
 //!   # use andex::*;
-//!   enum MyIdxMarker {};
+//!   enum MyIdxMarker {}
 //!   ```
 //! - Create a type alias for the [`Andex`] type that's parameterized
 //!   with that type:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   type MyIdx = Andex<MyIdxMarker, 12>;
 //!   ```
 //! - Create a type alias for the [`AndexableArray`] type that's
 //!   indexed by the [`Andex`] alias created above:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   // There is also a helper macro for this one:
@@ -61,7 +61,7 @@
 //! - Via `new`, passing the value as a generic const argument:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   const first : MyIdx = MyIdx::new::<0>();
 //!   ```
@@ -73,7 +73,7 @@
 //!   ```rust
 //!   # use std::convert::TryFrom;
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   if let Ok(first) = MyIdx::try_from(0) {
 //!       // ...
@@ -84,7 +84,7 @@
 //!   ```rust
 //!   # use std::convert::TryFrom;
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   const first : MyIdx = MyIdx::FIRST;
 //!   let last = MyIdx::LAST;
@@ -93,7 +93,7 @@
 //! - By iterating:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   for idx in MyIdx::iter() {
 //!       // ...
@@ -112,7 +112,7 @@
 //! - Using `Default` if the underlying type supports it:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
@@ -124,7 +124,7 @@
 //! - Using `From` with an appropriate array:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   let myu32 = MyU32::from([8; MyIdx::SIZE]);
@@ -132,7 +132,7 @@
 //! - Collecting an iterator with the proper elements and size:
 //!   ```rust
 //!   # use andex::*;
-//!   # enum MyIdxMarker {};
+//!   # enum MyIdxMarker {}
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   # type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   let myu32 = (0..12).collect::<MyU32>();
@@ -156,7 +156,7 @@
 //!
 //! // Create the andex type alias:
 //! //   First, we need an empty type that we use as a marker:
-//! enum MyIdxMarker {};
+//! enum MyIdxMarker {}
 //! //   The andex type takes the marker (for uniqueness)
 //! //   and the size of the array as parameters:
 //! type MyIdx = Andex<MyIdxMarker, 12>;
@@ -211,16 +211,14 @@
 //!
 //! ```compile_fail
 //! use andex::*;
-//! enum MyIdxMarker {};
+//! enum MyIdxMarker {}
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
-//! fn main() {
-//!     let myu32 = MyU32::default();
+//! let myu32 = MyU32::default();
 //!
-//!     // Error: can't index myu32 with a usize
-//!     println!("{}", myu32[0]);
-//! }
+//! // Error: can't index myu32 with a usize
+//! println!("{}", myu32[0]);
 //! ```
 //!
 //! - We can't create a const [`Andex`] with an out-of-bounds value.
@@ -229,13 +227,11 @@
 //!
 //! ```compile_fail
 //! use andex::*;
-//! enum MyIdxMarker {};
+//! enum MyIdxMarker {}
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //!
-//! fn main() {
-//!     // Error: can't create out-of-bounds const:
-//!     const myidx : MyIdx = MyIdx::new::<13>();
-//! }
+//! // Error: can't create out-of-bounds const:
+//! const myidx : MyIdx = MyIdx::new::<13>();
 //! ```
 //!
 //! - We can't index [`AndexableArray`] with a different Andex, even when
@@ -247,21 +243,19 @@
 //! ```compile_fail
 //! use andex::*;
 //!
-//! enum MyIdxMarker {};
+//! enum MyIdxMarker {}
 //! type MyIdx = Andex<MyIdxMarker, 12>;
 //! type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!
-//! enum TheirIdxMarker {};
+//! enum TheirIdxMarker {}
 //! type TheirIdx = Andex<TheirIdxMarker, 12>;
 //! type TheirU32 = AndexableArray<TheirIdx, u32, { TheirIdx::SIZE }>;
 //!
-//! fn main() {
-//!     let myu32 = MyU32::default();
-//!     let theirIdx = TheirIdx::FIRST;
+//! let myu32 = MyU32::default();
+//! let theirIdx = TheirIdx::FIRST;
 //!
-//!     // Error: can't index a MyU32 array with TheirIdx
-//!     println!("{}", myu32[theirIdx]);
-//! }
+//! // Error: can't index a MyU32 array with TheirIdx
+//! println!("{}", myu32[theirIdx]);
 //! ```
 
 mod andex;
