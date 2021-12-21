@@ -82,5 +82,6 @@ fn test_iter() -> Result<()> {
     for item in myarray {
         assert_eq!(item, 5);
     }
+    assert!(myarray.iter().all(|i| *i == 5));
     Ok(())
 }

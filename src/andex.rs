@@ -334,6 +334,13 @@ macro_rules! array {
     };
 }
 
+impl<A, Item, const SIZE: usize> AndexableArray<A, Item, SIZE> {
+    /// Returns an iterator over the `AnexableArray`.
+    pub fn iter(&self) -> impl Iterator<Item = &Item> {
+        self.1.iter()
+    }
+}
+
 impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
     fn clone(&self) -> Self {
         AndexableArray::<A, Item, SIZE>::from(self.1)
