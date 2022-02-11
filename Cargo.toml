@@ -10,4 +10,4 @@ homepage = "https://github.com/lpenz/andex"
 repository = "https://github.com/lpenz/andex"
 
 [dev-dependencies]
-anyhow = "1"
+anyhow = "1.0.42"
