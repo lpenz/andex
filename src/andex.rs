@@ -438,7 +438,7 @@ impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> 
     type Item = Item;
     type IntoIter = std::array::IntoIter<Item, SIZE>;
     fn into_iter(self) -> Self::IntoIter {
-        std::array::IntoIter::new(self.1)
+        IntoIterator::into_iter(self.1)
     }
 }
 
