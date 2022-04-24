@@ -56,11 +56,6 @@ fn test_conversions() -> Result<()> {
     assert_eq!(&array2, myarray1.as_ref());
     let array3 = <[u32; 12]>::from(myarray1);
     assert_eq!(array3, array2);
-    let myarray2 = MyArray::from(&array2);
-    assert_eq!(&array2, myarray2.as_ref());
-    for a in myarray2 {
-        println!("{:?}", a);
-    }
     let myarray3 = array3.iter().collect::<MyArray>();
     assert_eq!(myarray3.as_ref(), &array3);
     let myarray4 = array3.iter().cloned().collect::<MyArray>();
@@ -79,9 +74,16 @@ fn test_iter() -> Result<()> {
     for item in &myarray {
         assert_eq!(*item, 5);
     }
-    for item in myarray {
-        assert_eq!(item, 5);
-    }
     assert!(myarray.iter().all(|i| *i == 5));
     Ok(())
 }
+
+// Enable when we start using a version with array.into_iter() (Rust 2021)
+// #[test]
+// fn test_intoiter() -> Result<()> {
+//     let myarray = MyArray2::from([3; 12]);
+//     for item in myarray {
+//         assert_eq!(item, 3);
+//     }
+//     Ok(())
+// }
