@@ -15,7 +15,7 @@ type MyIdx = Andex<MyIdxInner, 12>;
 
 type MyArray = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 
-type MyArray2 = andex::array!(MyIdx, u32);
+type MyArray2 = andex::andex_array!(MyIdx, u32);
 
 pub struct NoTraits {}
 type _MyArrayNoTraits = AndexableArray<MyIdx, NoTraits, { MyIdx::SIZE }>;

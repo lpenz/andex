@@ -47,7 +47,7 @@
 //!   # type MyIdx = Andex<MyIdxMarker, 12>;
 //!   type MyU32 = AndexableArray<MyIdx, u32, { MyIdx::SIZE }>;
 //!   // There is also a helper macro for this one:
-//!   type MyOtherU32 = andex::array!(MyIdx, u32);
+//!   type MyOtherU32 = andex_array!(MyIdx, u32);
 //!   ```
 //!
 //! ## Creating andex instances
@@ -119,7 +119,7 @@
 //!   let myu32 = MyU32::default();
 //!
 //!   // We also have a helper macro that avoids repeating the size:
-//!   type MyOtherU32 = andex::array!(MyIdx, u32);
+//!   type MyOtherU32 = andex_array!(MyIdx, u32);
 //!   ```
 //! - Using `From` with an appropriate array:
 //!   ```rust

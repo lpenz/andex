@@ -325,10 +325,10 @@ pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZ
 /// type MyIdx = Andex<MyIdxMarker, 12>;
 ///
 /// // Create the array wrapper with the macro:
-/// type MyU32 = andex::array!(MyIdx, u32);
+/// type MyU32 = andex_array!(MyIdx, u32);
 /// ```
 #[macro_export]
-macro_rules! array {
+macro_rules! andex_array {
     ($andex: ty, $item: ty) => {
         $crate::AndexableArray<$andex, $item, { <$andex>::SIZE }>
     };
