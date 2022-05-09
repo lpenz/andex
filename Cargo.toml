@@ -8,6 +8,8 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lpenz/andex"
 repository = "https://github.com/lpenz/andex"
+categories = ["rust-patterns"]
+keywords = ["wrapper", "indexing", "arrays", "index", "indexed"]
 
 [dev-dependencies]
 anyhow = "1.0.42"
