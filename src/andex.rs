@@ -87,7 +87,8 @@ impl<M, const SIZE: usize> Andex<M, SIZE> {
     pub const fn new<const N: usize>() -> Self {
         // Trick for compile-time check of N:
         const ASSERT: [(); 1] = [(); 1];
-        let _ = ASSERT[(N >= SIZE) as usize];
+        #[allow(clippy::no_effect)]
+        ASSERT[(N >= SIZE) as usize];
         Andex(PhantomData, N)
     }
 
