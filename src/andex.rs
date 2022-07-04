@@ -17,6 +17,7 @@ use std::convert::TryFrom;
 use std::error;
 use std::fmt;
 use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 use std::num;
 use std::ops;
 use std::str;
@@ -461,17 +462,13 @@ impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a mut AndexableArray<A, 
 
 impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArray<A, Item, SIZE> {
     fn from_iter<I: core::iter::IntoIterator<Item = Item>>(intoiter: I) -> Self {
-        let mut andexable = AndexableArray::<A, Item, SIZE>(
-            PhantomData,
-            #[allow(clippy::uninit_assumed_init)]
-            unsafe {
-                std::mem::MaybeUninit::uninit().assume_init()
-            },
-        );
+        let mut andexable = AndexableArray::<A, MaybeUninit<Item>, SIZE>(PhantomData, unsafe {
+            std::mem::MaybeUninit::uninit().assume_init()
+        });
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
             if let Some(fromiter) = iter.next() {
-                *item = fromiter;
+                item.write(fromiter);
             } else {
                 panic!("iterator too short for andexable type");
             }
@@ -479,7 +476,8 @@ impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArr
         if iter.next().is_some() {
             panic!("iterator too long for andexable type");
         }
-        andexable
+
+        unsafe { std::mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
     }
 }
 
@@ -487,17 +485,13 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
     for AndexableArray<A, Item, SIZE>
 {
     fn from_iter<I: core::iter::IntoIterator<Item = &'a Item>>(intoiter: I) -> Self {
-        let mut andexable = AndexableArray::<A, Item, SIZE>(
-            PhantomData,
-            #[allow(clippy::uninit_assumed_init)]
-            unsafe {
-                std::mem::MaybeUninit::uninit().assume_init()
-            },
-        );
+        let mut andexable = AndexableArray::<A, MaybeUninit<Item>, SIZE>(PhantomData, unsafe {
+            std::mem::MaybeUninit::uninit().assume_init()
+        });
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
             if let Some(&fromiter) = iter.next() {
-                *item = fromiter;
+                item.write(fromiter);
             } else {
                 panic!("iterator too short for andexable type");
             }
@@ -505,7 +499,8 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
         if iter.next().is_some() {
             panic!("iterator too long for andexable type");
         }
-        andexable
+
+        unsafe { std::mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
     }
 }
 
