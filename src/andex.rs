@@ -16,6 +16,7 @@ use std::convert;
 use std::convert::TryFrom;
 use std::error;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::num;
@@ -166,6 +167,12 @@ impl<M, const SIZE: usize> Clone for Andex<M, SIZE> {
 }
 
 impl<M, const SIZE: usize> Copy for Andex<M, SIZE> {}
+
+impl<M, const SIZE: usize> Hash for Andex<M, SIZE> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.1.hash(state);
+    }
+}
 
 impl<M, const SIZE: usize> Default for Andex<M, SIZE> {
     fn default() -> Self {
