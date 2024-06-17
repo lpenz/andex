@@ -345,7 +345,7 @@ impl<A, Item, const SIZE: usize> AndexableArray<A, Item, SIZE> {
 
 impl<A, Item: Copy, const SIZE: usize> Clone for AndexableArray<A, Item, SIZE> {
     fn clone(&self) -> Self {
-        AndexableArray::<A, Item, SIZE>::from(self.1)
+        *self
     }
 }
 
