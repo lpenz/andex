@@ -1,9 +1,9 @@
 [package]
 name = "andex"
 description = "Safe, strongly typed array indexes and wrappers for rust with zero dependencies"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["Leandro Lisboa Penz <lpenz@lpenz.org>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lpenz/andex"
