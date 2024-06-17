@@ -318,7 +318,7 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 /// // Print the whole array
 /// println!("{:?}", myu32);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZE]);
 
 /// Helper macro that creates an AndexableArray from an Andex
