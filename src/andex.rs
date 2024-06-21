@@ -318,8 +318,19 @@ impl<M, const SIZE: usize> Iterator for AndexIterator<M, SIZE> {
 /// // Print the whole array
 /// println!("{:?}", myu32);
 /// ```
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AndexableArray<A, Item, const SIZE: usize>(PhantomData<A>, [Item; SIZE]);
+
+impl<A, Item: fmt::Debug, const SIZE: usize> fmt::Debug for AndexableArray<A, Item, SIZE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "AndexableArray<{}>({:?})",
+            std::any::type_name::<Item>(),
+            self.1
+        )
+    }
+}
 
 /// Helper macro that creates an AndexableArray from an Andex
 ///

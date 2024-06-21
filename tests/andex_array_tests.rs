@@ -43,6 +43,17 @@ fn test_myarr() -> Result<()> {
 }
 
 #[test]
+fn test_debug() -> Result<()> {
+    let mut m = MyArray::default();
+    m[MyIdx::new::<2>()] = 5;
+    assert_eq!(
+        format!("{:?}", m),
+        "AndexableArray<u32>([0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0])"
+    );
+    Ok(())
+}
+
+#[test]
 fn test_conversions() -> Result<()> {
     let mut myarray1 = MyArray::from([3; 12]);
     let array1 = myarray1.as_mut();
