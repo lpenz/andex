@@ -355,7 +355,7 @@ macro_rules! andex_array {
 }
 
 impl<A, Item, const SIZE: usize> AndexableArray<A, Item, SIZE> {
-    /// Returns an iterator over the `AnexableArray`.
+    /// Returns an iterator over the `&AndexableArray`.
     pub fn iter(&self) -> impl Iterator<Item = &Item> {
         self.1.iter()
     }
@@ -454,13 +454,13 @@ where
     }
 }
 
-// impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> {
-//     type Item = Item;
-//     type IntoIter = std::array::IntoIter<Item, SIZE>;
-//     fn into_iter(self) -> Self::IntoIter {
-//         IntoIterator::into_iter(self.1)
-//     }
-// }
+impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> {
+    type Item = Item;
+    type IntoIter = std::array::IntoIter<Item, SIZE>;
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIterator::into_iter(self.1)
+    }
+}
 
 impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a AndexableArray<A, Item, SIZE> {
     type Item = &'a Item;

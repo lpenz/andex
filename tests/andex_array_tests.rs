@@ -89,12 +89,11 @@ fn test_iter() -> Result<()> {
     Ok(())
 }
 
-// Enable when we start using a version with array.into_iter() (Rust 2021)
-// #[test]
-// fn test_intoiter() -> Result<()> {
-//     let myarray = MyArray2::from([3; 12]);
-//     for item in myarray {
-//         assert_eq!(item, 3);
-//     }
-//     Ok(())
-// }
+#[test]
+fn test_intoiter() -> Result<()> {
+    let myarray = MyArray2::from([3; 12]);
+    for item in myarray {
+        assert_eq!(item, 3);
+    }
+    Ok(())
+}
