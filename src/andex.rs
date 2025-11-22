@@ -566,10 +566,7 @@ impl From<num::ParseIntError> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::OutOfBounds {
-                ref value,
-                ref size,
-            } => write!(
+            Error::OutOfBounds { value, size } => write!(
                 f,
                 "value {} is out-of-bounds for index with size {}",
                 value, size

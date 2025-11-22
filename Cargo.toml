@@ -3,7 +3,7 @@ name = "andex"
 description = "Safe, strongly typed array indexes and wrappers for rust with zero dependencies"
 version = "0.0.18"
 authors = ["Leandro Lisboa Penz <lpenz@lpenz.org>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lpenz/andex"
@@ -12,4 +12,4 @@ categories = ["rust-patterns"]
 keywords = ["wrapper", "indexing", "arrays", "index", "indexed"]
 
 [dev-dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.100"
