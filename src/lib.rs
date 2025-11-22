@@ -2,6 +2,7 @@
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE', which is part of this source code package.
 
+#![no_std]
 #![warn(rust_2018_idioms)]
 #![warn(missing_docs)]
 

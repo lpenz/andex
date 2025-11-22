@@ -11,17 +11,21 @@
 //! file to their projects and use andex as its own module, without a
 //! crate dependency.
 
-use std::cmp;
-use std::convert;
-use std::convert::TryFrom;
-use std::error;
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::marker::PhantomData;
-use std::mem::MaybeUninit;
-use std::num;
-use std::ops;
-use std::str;
+use core::any;
+use core::array;
+use core::cmp;
+use core::convert;
+use core::convert::TryFrom;
+use core::error;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::marker::PhantomData;
+use core::mem;
+use core::mem::MaybeUninit;
+use core::num;
+use core::ops;
+use core::slice;
+use core::str;
 
 /* Andex index type */
 
@@ -326,7 +330,7 @@ impl<A, Item: fmt::Debug, const SIZE: usize> fmt::Debug for AndexableArray<A, It
         write!(
             f,
             "AndexableArray<{}>({:?})",
-            std::any::type_name::<Item>(),
+            any::type_name::<Item>(),
             self.1
         )
     }
@@ -456,7 +460,7 @@ where
 
 impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> {
     type Item = Item;
-    type IntoIter = std::array::IntoIter<Item, SIZE>;
+    type IntoIter = array::IntoIter<Item, SIZE>;
     fn into_iter(self) -> Self::IntoIter {
         IntoIterator::into_iter(self.1)
     }
@@ -464,7 +468,7 @@ impl<A, Item, const SIZE: usize> IntoIterator for AndexableArray<A, Item, SIZE> 
 
 impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a AndexableArray<A, Item, SIZE> {
     type Item = &'a Item;
-    type IntoIter = std::slice::Iter<'a, Item>;
+    type IntoIter = slice::Iter<'a, Item>;
     fn into_iter(self) -> Self::IntoIter {
         self.1.iter()
     }
@@ -472,7 +476,7 @@ impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a AndexableArray<A, Item
 
 impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a mut AndexableArray<A, Item, SIZE> {
     type Item = &'a mut Item;
-    type IntoIter = std::slice::IterMut<'a, Item>;
+    type IntoIter = slice::IterMut<'a, Item>;
     fn into_iter(self) -> Self::IntoIter {
         self.1.iter_mut()
     }
@@ -481,7 +485,7 @@ impl<'a, A, Item, const SIZE: usize> IntoIterator for &'a mut AndexableArray<A, 
 impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArray<A, Item, SIZE> {
     fn from_iter<I: core::iter::IntoIterator<Item = Item>>(intoiter: I) -> Self {
         let mut andexable = AndexableArray::<A, MaybeUninit<Item>, SIZE>(PhantomData, unsafe {
-            std::mem::MaybeUninit::uninit().assume_init()
+            mem::MaybeUninit::uninit().assume_init()
         });
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
@@ -495,7 +499,7 @@ impl<A, Item, const SIZE: usize> core::iter::FromIterator<Item> for AndexableArr
             panic!("iterator too long for andexable type");
         }
 
-        unsafe { std::mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
+        unsafe { mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
     }
 }
 
@@ -504,7 +508,7 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 {
     fn from_iter<I: core::iter::IntoIterator<Item = &'a Item>>(intoiter: I) -> Self {
         let mut andexable = AndexableArray::<A, MaybeUninit<Item>, SIZE>(PhantomData, unsafe {
-            std::mem::MaybeUninit::uninit().assume_init()
+            mem::MaybeUninit::uninit().assume_init()
         });
         let mut iter = intoiter.into_iter();
         for item in &mut andexable {
@@ -518,7 +522,7 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
             panic!("iterator too long for andexable type");
         }
 
-        unsafe { std::mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
+        unsafe { mem::transmute_copy::<_, AndexableArray<A, Item, SIZE>>(&andexable) }
     }
 }
 
@@ -531,7 +535,7 @@ impl<'a, A, Item: 'a + Copy, const SIZE: usize> core::iter::FromIterator<&'a Ite
 /// For instance, this code prints the error:
 ///
 /// ```
-/// use std::convert::TryFrom;
+/// use core::convert::TryFrom;
 /// use andex::*;
 ///
 /// enum MyIdxMarker {}
